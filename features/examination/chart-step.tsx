@@ -117,7 +117,7 @@ export function ChartPanel({ examination }: { examination: Examination }) {
         <table className="w-full border-collapse text-[12.5px]">
           <thead>
             <tr className="bg-canvas">
-              <th scope="col" className="sticky left-0 z-10 w-24 border-b border-line-strong bg-canvas px-2 py-2 text-left font-semibold text-ink-3">
+              <th scope="col" className="sticky left-0 z-10 w-24 border-b border-line-strong bg-canvas px-2 py-2 text-left font-semibold text-ink-3 shadow-[1px_0_0_var(--color-line-strong)]">
                 Marker
               </th>
               {images.map((image) => (
@@ -139,7 +139,7 @@ export function ChartPanel({ examination }: { examination: Examination }) {
               const scale = marker.chartScale ?? 1;
               return (
                 <tr key={marker.number}>
-                  <th scope="row" className="sticky left-0 z-10 border-b border-line bg-surface px-2 py-2 text-left align-middle">
+                  <th scope="row" className="sticky left-0 z-10 border-b border-line bg-surface px-2 py-2 text-left align-middle shadow-[1px_0_0_var(--color-line-strong)]">
                     <span className="flex size-7 items-center justify-center rounded-full border-2 border-marker text-[13px] font-bold text-marker tabular">
                       {marker.number}
                     </span>

@@ -188,7 +188,9 @@ export function CropPanel({ examination }: { examination: Examination }) {
   return (
     <Panel>
       <p className="mb-2.5 text-[13px] text-ink-3 tabular">
-        {croppedCount} of {images.length} cropped
+        {croppedCount
+          ? `${croppedCount} of ${images.length} cropped`
+          : "No signature is cropped yet. Cropping is optional, so you can also go on with the full images."}
       </p>
       <div data-tour="strip">
       <SignatureStrip

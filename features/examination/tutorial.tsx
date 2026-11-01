@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { readPreference, writePreference } from "@/lib/preferences";
 import { routes } from "@/lib/routes";
+import { examinationRepository } from "@/services/examinations";
 import { useExaminationsStore } from "@/stores/examinations";
 import { useSessionStore } from "@/stores/session";
 import { toast } from "@/stores/toast";
 import type { ExaminationStepId } from "@/types/examination";
 
-import { EXAMINATION_STEPS } from "./model";
-import { practiceImages } from "./practice";
+import { EXAMINATION_STEPS, signatureImageId } from "./model";
+import { PRACTICE_REPORT_DETAILS, practiceImages, practiceSignature } from "./practice";
 
 interface Tip {
   /** Matches a data-tour attribute on the page. */
@@ -58,6 +59,7 @@ const CARD_WIDTH = 340;
 export function SpotlightTour({ tips, onClose }: { tips: Tip[]; onClose: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [cardHeight, setCardHeight] = useState(180);
@@ -67,6 +69,11 @@ export function SpotlightTour({ tips, onClose }: { tips: Tip[]; onClose: () => v
     const dialog = dialogRef.current;
     if (dialog && !dialog.open) dialog.showModal();
   }, []);
+
+  // Enter should move forward, so focus starts on the main button rather than Skip.
+  useEffect(() => {
+    nextRef.current?.focus();
+  }, [index]);
 
   const measure = useCallback(() => {
     const element = document.querySelector(`[data-tour="${tip.target}"]`);
@@ -147,7 +154,7 @@ export function SpotlightTour({ tips, onClose }: { tips: Tip[]; onClose: () => v
               Back
             </Button>
           ) : null}
-          <Button size="sm" autoFocus onClick={() => (isLast ? onClose() : setIndex(index + 1))}>
+          <Button ref={nextRef} size="sm" onClick={() => (isLast ? onClose() : setIndex(index + 1))}>
             {isLast ? "Got it" : "Next"}
           </Button>
         </div>
@@ -156,27 +163,32 @@ export function SpotlightTour({ tips, onClose }: { tips: Tip[]; onClose: () => v
   );
 }
 
-function seenKey() {
-  return `examination-tips:${useSessionStore.getState().claims?.userId ?? ""}`;
+function seenKey(practice = false) {
+  return `examination-tips${practice ? "-practice" : ""}:${useSessionStore.getState().claims?.userId ?? ""}`;
 }
 
-/** Each step's tips open once by themselves. The Show tips button replays them. */
-export function useStepTips(step: ExaminationStepId, ready: boolean) {
+/**
+ * Each step's tips open once by themselves, and again for every new practice run.
+ * Tips seen in practice aren't repeated in real examinations. Show tips replays them.
+ */
+export function useStepTips(step: ExaminationStepId, ready: boolean, practice: boolean) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!ready || window.innerWidth < 768) return;
-    const seen = readPreference<string[]>(seenKey(), []);
+    const seen = readPreference<string[]>(seenKey(practice), []);
     if (seen.includes(step)) return;
     const timer = setTimeout(() => {
-      writePreference(seenKey(), [...seen, step]);
+      writePreference(seenKey(practice), [...seen, step]);
+      const seenReal = readPreference<string[]>(seenKey(), []);
+      if (!seenReal.includes(step)) writePreference(seenKey(), [...seenReal, step]);
       setOpen(true);
     }, 450);
     return () => {
       clearTimeout(timer);
       setOpen(false);
     };
-  }, [ready, step]);
+  }, [practice, ready, step]);
 
   return { tips: STEP_TIPS[step], open, show: () => setOpen(true), close: () => setOpen(false) };
 }
@@ -212,9 +224,13 @@ export function ExaminationIntro({ open, onClose }: { open: boolean; onClose: ()
     try {
       const store = useExaminationsStore.getState();
       const images = await practiceImages();
-      const examination = await store.create({ isPractice: true, caseName: "Practice examination", caseNumber: "PRACTICE" });
+      const examination = await store.create({ isPractice: true, caseName: "Practice examination", caseNumber: "PRACTICE", ...PRACTICE_REPORT_DETAILS });
+      const userId = useSessionStore.getState().claims?.userId ?? "";
+      await examinationRepository.putImage(userId, examination.id, signatureImageId(userId, examination), await practiceSignature());
       await store.addImages(images);
       await store.flush();
+      // A new run starts its tips over.
+      writePreference(seenKey(true), []);
       setStarting(false);
       onClose();
       router.push(routes.examiner.examination(examination.id));

@@ -86,15 +86,6 @@ function CaseDetails({ examination }: { examination: Examination }) {
   );
 }
 
-// Filled in by the following build steps; see docs/examination/AUDIT.md.
-function UpcomingStep({ title }: { title: string }) {
-  return (
-    <Panel>
-      <EmptyState compact title={`${title} isn't available yet`} description="You can move through the other steps. Your work is kept." />
-    </Panel>
-  );
-}
-
 function ActiveStep({ step, examination }: { step: ExaminationStepId; examination: Examination }) {
   if (step === "images") {
     return (
@@ -111,17 +102,14 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
   if (step === "chart") return <ChartPanel examination={examination} />;
   if (step === "general") return <GeneralFindingsPanel examination={examination} />;
   if (step === "specific") return <SpecificFindingsPanel examination={examination} />;
-  if (step === "conclusion") {
-    return (
-      <div className="flex flex-col gap-5">
-        <ConclusionPanel examination={examination} />
-        <div data-tour="report">
-          <ExportPanel examination={examination} />
-        </div>
+  return (
+    <div className="flex flex-col gap-5">
+      <ConclusionPanel examination={examination} />
+      <div data-tour="report">
+        <ExportPanel examination={examination} />
       </div>
-    );
-  }
-  return <UpcomingStep title={EXAMINATION_STEPS.find((item) => item.id === step)!.title} />;
+    </div>
+  );
 }
 
 /** Marking needs room: phones get a summary instead of a cramped editor. */
@@ -160,7 +148,7 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
   const wanted: ExaminationStepId = isStepId(requested) ? requested : (examination?.lastStep ?? "images");
   // A saved position or shared link can't skip the required signatures.
   const step: ExaminationStepId = locked ? "images" : wanted;
-  const stepTips = useStepTips(step, hasExaminationForTips);
+  const stepTips = useStepTips(step, hasExaminationForTips, current?.isPractice === true);
   const stepIndex = EXAMINATION_STEP_IDS.indexOf(step);
   const stepInfo = EXAMINATION_STEPS[stepIndex];
   const hrefFor = (target: ExaminationStepId) => `${pathname}?step=${target}`;
@@ -183,6 +171,10 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
     if (previousStep.current && previousStep.current !== step) {
       headingRef.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0 });
+      if (previousStep.current === "crop") {
+        const store = useExaminationsStore.getState();
+        if (!store.current?.cropReviewed) store.update({ cropReviewed: true });
+      }
     }
     previousStep.current = step;
   }, [step]);

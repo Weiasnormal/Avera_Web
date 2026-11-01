@@ -142,11 +142,14 @@ function StoredImageField({
   label,
   hint,
   imageId,
+  ownerId,
   onChange,
 }: {
   label: string;
   hint: string;
   imageId: string;
+  /** What the image belongs to, so a practice run's images go when it does. */
+  ownerId: string;
   onChange: (present: boolean) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -172,7 +175,7 @@ function StoredImageField({
     try {
       validateImageFile(file);
       const png = await toPng(file);
-      await examinationRepository.putImage(currentUserId(), "profile", imageId, png);
+      await examinationRepository.putImage(currentUserId(), ownerId, imageId, png);
       setUrl(URL.createObjectURL(png));
       onChange(true);
     } catch (addError) {
@@ -230,13 +233,14 @@ export function ExportPanel({ examination }: { examination: Examination }) {
   const { letterhead, signOff } = examination;
   const warnings = reportWarnings(examination);
   const prefilled = useRef(false);
+  const ownerId = examination.isPractice ? examination.id : "profile";
 
   // The first report starts from the organization and profile; later ones reuse the last used details.
   useEffect(() => {
     if (prefilled.current || letterhead.lines.length || signOff.name) return;
     prefilled.current = true;
     void examinationRepository.list(userId).then((items) => {
-      const previous = items.find((item) => item.id !== examination.id && (item.letterhead.lines.length || item.signOff.name));
+      const previous = items.find((item) => item.id !== examination.id && !item.isPractice && (item.letterhead.lines.length || item.signOff.name));
       const store = useExaminationsStore.getState();
       if (previous) store.update({ letterhead: previous.letterhead, signOff: previous.signOff });
       else store.update({ letterhead: { ...letterhead, lines: organization ? [organization] : [] }, signOff: { ...signOff, name: examinerName } });
@@ -247,7 +251,10 @@ export function ExportPanel({ examination }: { examination: Examination }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <Panel title="Report details" description="Saved for your next report on this device.">
+      <Panel
+        title="Report details"
+        description={examination.isPractice ? "Made-up details for practice. Your real ones aren't used or changed." : "Saved for your next report on this device."}
+      >
         <div className="grid gap-5 md:grid-cols-2">
           <div className="flex flex-col gap-4">
             <TextAreaField
@@ -259,8 +266,9 @@ export function ExportPanel({ examination }: { examination: Examination }) {
             <StoredImageField
               label="Logo"
               hint="Optional. Shown above the letterhead."
-              imageId={logoImageId(userId)}
-              onChange={(present) => update({ letterhead: { ...letterhead, logoImageId: present ? logoImageId(userId) : null } })}
+              imageId={logoImageId(userId, examination)}
+              ownerId={ownerId}
+              onChange={(present) => update({ letterhead: { ...letterhead, logoImageId: present ? logoImageId(userId, examination) : null } })}
             />
           </div>
           <div className="flex flex-col gap-4">
@@ -278,7 +286,8 @@ export function ExportPanel({ examination }: { examination: Examination }) {
             <StoredImageField
               label="Signature"
               hint="Optional. Without one, the report has a line to sign after printing."
-              imageId={signatureImageId(userId)}
+              imageId={signatureImageId(userId, examination)}
+              ownerId={ownerId}
               onChange={(present) => setSignOff({ useSignatureImage: present })}
             />
           </div>

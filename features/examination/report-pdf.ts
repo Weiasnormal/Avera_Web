@@ -167,10 +167,30 @@ class ReportWriter {
   }
 
   centered(text: string, font: PDFFont, size: number) {
-    const clean = this.clean(font, text);
-    const x = MARGIN + (this.width - font.widthOfTextAtSize(clean, size)) / 2;
-    this.page.drawText(clean, { x, y: this.y - size, font, size, color: INK });
-    this.y -= size + 4;
+    for (const line of this.wrap(text, font, size, this.width)) {
+      const x = MARGIN + (this.width - font.widthOfTextAtSize(line, size)) / 2;
+      this.page.drawText(line, { x, y: this.y - size, font, size, color: INK });
+      this.y -= size + 4;
+    }
+  }
+
+  /** A bold label with its value beside it. Long values wrap instead of being cut off. */
+  labelled(label: string, value: string, x: number, width: number) {
+    const size = 10.5;
+    const offset = this.bold.widthOfTextAtSize(label, size) + 4;
+    this.text(label, x, this.y - 11, this.bold, size);
+    const lines = this.wrap(value, this.regular, size, width - offset);
+    lines.forEach((line, index) => {
+      this.page.drawText(line, { x: x + offset, y: this.y - 11 - index * (size + 3), font: this.regular, size, color: INK });
+    });
+    return lines.length * (size + 3);
+  }
+
+  /** The largest size, down to 6.5pt, at which short text fits on one line. */
+  fittedSize(text: string, font: PDFFont, size: number, width: number) {
+    let fitted = size;
+    while (fitted > 6.5 && font.widthOfTextAtSize(this.clean(font, text), fitted) > width) fitted -= 0.5;
+    return fitted;
   }
 
   paragraph(text: string, font: PDFFont, size: number, width = this.width) {
@@ -292,7 +312,7 @@ export async function buildExaminationReport(examination: Examination, userId: s
       bitmaps.set(image.id, await createImageBitmap(blob));
     }
 
-    const signatureBlob = signOff.useSignatureImage ? await examinationRepository.getImage(userId, signatureImageId(userId)) : null;
+    const signatureBlob = signOff.useSignatureImage ? await examinationRepository.getImage(userId, signatureImageId(userId, examination)) : null;
     const signature = signatureBlob ? await pngFromBlob(pdf, signatureBlob) : null;
     const logoBlob = letterhead.logoImageId ? await examinationRepository.getImage(userId, letterhead.logoImageId) : null;
     const logo = logoBlob ? await pngFromBlob(pdf, logoBlob) : null;
@@ -324,15 +344,10 @@ export async function buildExaminationReport(examination: Examination, userId: s
     linesOf(letterhead.lines.join("\n")).forEach((line, index) => writer.centered(line, serifBold, index === 0 ? 13 : 11.5));
     writer.y -= 14;
 
-    const labelled = (label: string, value: string, x: number) => {
-      writer.text(label, x, writer.y - 11, bold, 10.5);
-      writer.text(value, x + bold.widthOfTextAtSize(label, 10.5) + 4, writer.y - 11, regular, 10.5);
-    };
-    labelled("Name of the Case:", examination.caseName.trim().slice(0, 74), MARGIN);
-    writer.y -= 20;
-    labelled("Case No:", examination.caseNumber.trim().slice(0, 28), MARGIN);
-    labelled("Document Examiner:", signOff.name.trim().slice(0, 34), MARGIN + 220);
-    writer.y -= 28;
+    writer.y -= writer.labelled("Name of the Case:", examination.caseName.trim(), MARGIN, writer.width) + 6;
+    const caseHeight = writer.labelled("Case No:", examination.caseNumber.trim(), MARGIN, 210);
+    const examinerHeight = writer.labelled("Document Examiner:", signOff.name.trim(), MARGIN + 220, writer.width - 220);
+    writer.y -= Math.max(caseHeight, examinerHeight) + 14;
 
     const placed = markers.filter((marker) => Object.keys(marker.placements).length > 0);
     const numberWidth = 24;
@@ -379,7 +394,10 @@ export async function buildExaminationReport(examination: Examination, userId: s
     writer.text("Noted by:", MARGIN, signY, bold, 10.5);
     const notedX = MARGIN + 56;
     writer.page.drawLine({ start: { x: notedX, y: signY - 2 }, end: { x: notedX + 130, y: signY - 2 }, thickness: 0.7, color: INK });
-    if (signOff.notedBy?.trim()) writer.text(signOff.notedBy.trim().slice(0, 30), notedX + 2, signY + 2, regular, 10);
+    if (signOff.notedBy?.trim()) {
+      const notedBy = signOff.notedBy.trim();
+      writer.text(notedBy, notedX + 2, signY + 2, regular, writer.fittedSize(notedBy, regular, 10, 128));
+    }
     const examinedX = MARGIN + 262;
     writer.text("Examined by:", examinedX, signY, bold, 10.5);
     const lineX = examinedX + 70;
@@ -470,7 +488,7 @@ export async function buildExaminationReport(examination: Examination, userId: s
     // Footer, added last so it knows the page count.
     const pages = pdf.getPages();
     pages.forEach((page, index) => {
-      const footer = `Prepared with Avera${examination.caseNumber.trim() ? `  |  Case ${writer.clean(regular, examination.caseNumber.trim())}` : ""}`;
+      const footer = `Prepared with Avera${examination.caseNumber.trim() ? `  |  Case ${writer.clean(regular, examination.caseNumber.trim()).slice(0, 60)}` : ""}`;
       page.drawText(footer, { x: MARGIN, y: 28, font: regular, size: 8, color: MUTED });
       if (examination.isPractice) {
         const notice = "PRACTICE ONLY - NOT A REAL EXAMINATION";

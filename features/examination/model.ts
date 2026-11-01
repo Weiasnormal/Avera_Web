@@ -112,13 +112,16 @@ export function isImageMarked(examination: Examination, imageId: string) {
   return examination.markers.some((marker) => marker.placements[imageId]);
 }
 
-/** Kept per user, so an examiner's signature follows them to each examination on this device. */
-export function signatureImageId(userId: string) {
-  return `signature-${userId}`;
+/**
+ * Kept per user, so an examiner's signature and logo follow them to each examination
+ * on this device. A practice run has its own, so real ones never appear in it.
+ */
+export function signatureImageId(userId: string, examination?: Pick<Examination, "id" | "isPractice">) {
+  return examination?.isPractice ? `practice-signature-${examination.id}` : `signature-${userId}`;
 }
 
-export function logoImageId(userId: string) {
-  return `logo-${userId}`;
+export function logoImageId(userId: string, examination?: Pick<Examination, "id" | "isPractice">) {
+  return examination?.isPractice ? `practice-logo-${examination.id}` : `logo-${userId}`;
 }
 
 export function examinationTitle(examination: Pick<Examination, "caseName">) {
@@ -134,8 +137,9 @@ export function isStepStarted(examination: Examination, step: ExaminationStepId)
   switch (step) {
     case "images":
       return examination.images.length > 0;
+    // Cropping is optional, so moving on without one still completes the step.
     case "crop":
-      return examination.images.some((image) => image.crop !== null);
+      return examination.cropReviewed === true || examination.images.some((image) => image.crop !== null);
     case "mark":
       return examination.markers.some((marker) => Object.keys(marker.placements).length > 0);
     // The chart builds itself from placed markers.

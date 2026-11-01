@@ -159,7 +159,7 @@ export function FindingsEditor({
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="bg-canvas align-top">
-              <th scope="col" className="sticky left-0 z-10 w-44 min-w-44 border-b border-line-strong bg-canvas p-1.5 text-left">
+              <th scope="col" className="sticky left-0 z-10 w-44 min-w-44 border-b border-line-strong bg-canvas p-1.5 text-left shadow-[1px_0_0_var(--color-line-strong)]">
                 <input
                   aria-label="First column heading"
                   value={table.rowHeader ?? ""}
@@ -195,7 +195,7 @@ export function FindingsEditor({
               const canCopyRow = canCopy && standardColumnIds.some((id) => hasText(row, id));
               return (
                 <tr key={row.id} className="align-top">
-                  <th scope="row" className="sticky left-0 z-10 border-b border-line bg-surface p-1.5 text-left font-medium">
+                  <th scope="row" className="sticky left-0 z-10 border-b border-line bg-surface p-1.5 text-left font-medium shadow-[1px_0_0_var(--color-line-strong)]">
                     <AutoTextarea value={row.title} label={`Row ${index + 1} heading`} onChange={(title) => onChange(withRowTitle(table, row.id, title))} />
                     <span className="mt-0.5 flex items-center">
                       <IconButton size="sm" label={`Move ${row.title} up`} disabled={index === 0} onClick={() => onChange(withRowMoved(table, row.id, -1))}>

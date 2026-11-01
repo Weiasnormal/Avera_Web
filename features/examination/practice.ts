@@ -52,6 +52,36 @@ async function signatureFile(name: string, options: PenOptions) {
   return new File([blob], name, { type: "image/png" });
 }
 
+/** Made-up details, so nothing real appears on a practice report. */
+export const PRACTICE_REPORT_DETAILS = {
+  letterhead: { lines: ["SAMPLE FORENSIC LABORATORY", "Sample City", "Practice Report"], logoImageId: null },
+  signOff: { name: "Alex Sample", credentials: "PhD", title: "Practice Document Examiner", notedBy: "Sam Example", useSignatureImage: true },
+};
+
+/** A made-up examiner's signature, on white for the signature line. */
+export async function practiceSignature() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 600;
+  canvas.height = 240;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("This browser couldn't draw the practice signatures.");
+  context.fillStyle = "#fff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.lineCap = "round";
+  context.lineWidth = 5;
+  context.strokeStyle = "#1c2340";
+  context.beginPath();
+  context.moveTo(50, 170);
+  context.bezierCurveTo(150, 10, 200, 20, 150, 170);
+  context.bezierCurveTo(240, 90, 280, 90, 280, 150);
+  context.bezierCurveTo(360, 40, 420, 60, 380, 150);
+  context.bezierCurveTo(470, 110, 520, 120, 570, 90);
+  context.stroke();
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!blob) throw new Error("This browser couldn't draw the practice signatures.");
+  return blob;
+}
+
 export async function practiceImages(): Promise<NewExaminationImage[]> {
   const standards = [1, 2, 3, 4];
   return [

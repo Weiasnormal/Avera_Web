@@ -3,7 +3,7 @@
 Living record of what changed for the Examination page and what the backend must provide. Update it in every build step.
 
 - **Branch:** `feat/examination-workspace`, created from `feat/web-migration`
-- **Status:** Build steps 1 to 9 (workspace, saving, case and images, crop, mark strokes, comparison chart, findings tables, conclusion and AI, PDF export, tutorial) complete. Build step 10 (final pass) pending.
+- **Status:** All 10 build steps complete. Ready for the owner's real-backend test (section 7) before merging. Saving still uses the temporary on-device storage (section 3) until the backend endpoints (section 4) exist.
 - **Commits:** made by the project owner after each approved step.
 
 ## 1. Confirmed decisions
@@ -151,6 +151,21 @@ interface Table {
 | 8 fix | 2026-11-01 | Owner report: include box seemed ignored. Could not be reproduced: a second download did contain the result. Made files unique with a timestamp, added a confirmation naming whether the AI result is in, and made the AI section a table | `features/examination/export-step.tsx`, `report-pdf.ts` |
 | 8 fix | 2026-11-01 | Owner request: Keep this result or Run new analysis when the conclusion was edited or standards were added afterwards. Added notes for standards the analysis didn't compare, and a new analysis option at all times | `features/examination/conclusion-step.tsx`, `ai-basis.ts`, `types/examination.ts` |
 | 9 | 2026-11-01 | Added first-visit overview, per-step spotlight tips with Show tips, and a practice examination with drawn signatures, no AI, a practice notice on the PDF, and removal on returning to the list | `features/examination/tutorial.tsx`, `practice.ts`, `examination-list.tsx`, `examination-workspace.tsx`, `crop-step.tsx`, `mark-step.tsx`, `stores/examinations.ts` |
+| 9 fix | 2026-11-02 | Owner report: practice showed real report details, tips didn't reopen, Crop had no check. Practice now has made-up details and its own signature and logo slots; tips restart per practice run; Crop is checked after moving on, with a note that cropping is optional | `features/examination/practice.ts`, `tutorial.tsx`, `export-step.tsx`, `model.ts`, `crop-step.tsx`, `examination-workspace.tsx`, `report-pdf.ts`, `types/examination.ts` |
+| 10 | 2026-11-02 | Final pass: PDF no longer cuts off long case names or names, letterhead wraps; tour focus starts on Next so Enter advances; divider on fixed table columns; removed step placeholders | `features/examination/report-pdf.ts`, `tutorial.tsx`, `findings-editor.tsx`, `chart-step.tsx`, `examination-workspace.tsx` |
+
+## 7. Owner's test before merging
+
+These can't be checked with the mock setup:
+
+1. Sign in for real, start from a real case, and confirm its signatures load.
+2. Replace a signature, and run a separate analysis through the real AI pipeline. Confirm the new case's result appears, and that crops reached the model.
+3. Download a PDF, then tick Include AI result and download again. The confirmation should say "with", and that newest file should contain the table.
+4. Print a report on paper.
+5. Try marking and cropping with touch or a stylus on a tablet.
+6. Review the wording: conclusion starters and remark presets are this build's own, not an examiner's.
+7. Hit the case limit once, and confirm the message appears in the Run analysis dialog.
+8. Sign out and back in, and confirm work returns for that user and doesn't show for another.
 
 ## 6. Verification log
 
@@ -168,6 +183,10 @@ interface Table {
 | 8 | Real PDFs rendered and read page by page: 5 and 9 signatures, letterhead, logo, signature, chart, long cell across pages, repeated headings, conclusion, AI note, marked signatures, accented characters | Pass |
 | 8 fix | Export, tick include, export again: second PDF contains the AI section. Added then removed a standard: note appears then clears. Edited conclusion: Keep clears it. Timestamped name and confirmation shown | Pass |
 | 9 | Overview on first visit, practice start, spotlight on step tips, tips shown once per step, Show tips replays, no AI in practice, practice and its images removed on leaving, real examination untouched | Pass |
+| 9 fix | A seeded real signature doesn't appear in practice; fake details fill in; tips open on all 7 steps and again on a new run; tips seen in practice don't repeat in real examinations; Crop check appears after leaving; practice notice on every PDF page; practice images removed, real signature kept | Pass |
+| 10 | 9 signatures, 14 markers; delete and add a marker with table text; long names and unbroken words; unprintable characters warned; PDF pagination; Ctrl + wheel event zooms; hand tool pans; keyboard through the tour; How it works; failed AI run shows an error and links nothing; 768px chart and findings; 375px summary and PDF generation with no sideways overflow | Pass |
+
+Superseded by the two rows above: earlier "not yet checked" notes for Ctrl + wheel, hand tool, 9-column chart, 768px findings, marker changes, tips, the PDF practice notice, How it works, keyboard tour and unprintable characters.
 
 Not yet checked for Step 9: the tips on Crop, Chart, General and Specific, the PDF practice notice, "How it works" reopening the overview, and keyboard use of the tour.
 
