@@ -16,6 +16,7 @@ import { useExaminationsStore } from "@/stores/examinations";
 import { useSessionStore } from "@/stores/session";
 import type { Examination } from "@/types/examination";
 
+import { currentAiResult, hasAiBasisChanged } from "./ai-basis";
 import { RunAiDialog } from "./run-ai-dialog";
 
 function exhibitRange(examination: Examination) {
@@ -42,7 +43,8 @@ function AiPanel({ examination }: { examination: Examination }) {
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const hasConclusion = examination.conclusion.trim().length > 0;
-  const result = examination.aiResult;
+  const changed = hasAiBasisChanged(examination);
+  const result = currentAiResult(examination);
 
   const reveal = async () => {
     if (!examination.caseId) return;
@@ -110,6 +112,15 @@ function AiPanel({ examination }: { examination: Examination }) {
           <Lock className="size-4 shrink-0 text-ink-3" aria-hidden />
           Write your conclusion first. This keeps the AI from influencing your opinion.
         </p>
+      ) : changed ? (
+        <div className="flex flex-col items-start gap-3">
+          <Alert tone="caution" title="Your signatures changed after the AI analysis" className="w-full">
+            The linked case compared different signatures or crops, so its result doesn&apos;t apply here and stays out of the report. Run a separate analysis to get a result for these signatures. The original case isn&apos;t changed.
+          </Alert>
+          <Button variant="secondary" icon={<Bot className="size-4" aria-hidden />} onClick={() => setRunning(true)}>
+            Run separate analysis
+          </Button>
+        </div>
       ) : examination.caseId ? (
         <Button variant="secondary" loading={revealing} icon={<Eye className="size-4" aria-hidden />} onClick={() => void reveal()}>
           Reveal AI result

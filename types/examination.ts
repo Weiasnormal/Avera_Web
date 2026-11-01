@@ -88,6 +88,12 @@ export interface ExaminationAiResult {
   conclusionAtReveal: string;
 }
 
+/** The signatures and crops the linked AI analysis actually compared. */
+export interface AiBasis {
+  questioned: { imageId: string; crop: NormalizedRect | null };
+  references: { imageId: string; crop: NormalizedRect | null }[];
+}
+
 export interface Examination {
   id: string;
   /** Raised on every save. A stale version is rejected, so two tabs can't overwrite each other. */
@@ -100,11 +106,12 @@ export interface Examination {
   generalFindings: FindingsTable;
   specificFindings: FindingsTable;
   conclusion: string;
+  aiBasis?: AiBasis | null;
   /** Copied when revealed, after the conclusion is written. */
   aiResult?: ExaminationAiResult | null;
   includeAiResult: boolean;
   letterhead: { lines: string[]; logoImageId: string | null };
-  signOff: { name: string; title: string; credentials: string; useSignatureImage: boolean };
+  signOff: { name: string; title: string; credentials: string; useSignatureImage: boolean; notedBy?: string };
   lastStep: ExaminationStepId;
   createdAt: string;
   updatedAt: string;

@@ -20,6 +20,7 @@ import { useSessionStore } from "@/stores/session";
 import { DOCUMENT_TYPES, PRIORITIES, type AnalysisPriority, type DocumentType } from "@/types/case";
 import type { Examination, ExaminationImage } from "@/types/examination";
 
+import { buildAiBasis } from "./ai-basis";
 import { CroppedImage } from "./cropped-image";
 
 const AI_REFERENCES = 4;
@@ -69,7 +70,8 @@ export function RunAiDialog({ examination, onClose }: { examination: Examination
       analysis.setImage("suspect", 0, suspect);
       await analysis.submit((caseId) => {
         const store = useExaminationsStore.getState();
-        store.update({ caseId });
+        // A new case with its own result; the previous result no longer applies.
+        store.update({ caseId, aiBasis: buildAiBasis(questioned, chosen), aiResult: null, includeAiResult: false });
         void store.flush();
         onClose();
         router.push(routes.examiner.processing(caseId));

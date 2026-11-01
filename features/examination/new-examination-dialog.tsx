@@ -15,6 +15,8 @@ import { downloadCaseSignatures } from "@/services/cases";
 import { useExaminationsStore } from "@/stores/examinations";
 import type { CaseSummary } from "@/types/case";
 
+import { buildAiBasis } from "./ai-basis";
+
 function asFile(blob: Blob, name: string) {
   return new File([blob], name, { type: blob.type });
 }
@@ -130,6 +132,11 @@ export function NewExaminationDialog({ open, onClose }: { open: boolean; onClose
         ...references.map((blob, index) => ({ file: asFile(blob, `${item.caseCode}-reference-${index + 1}.png`), role: "standard" as const })),
       ]);
       if (failures.length) throw new Error(failures.join(" "));
+      const { current } = useExaminationsStore.getState();
+      const questioned = current?.images.find((image) => image.role === "questioned");
+      if (questioned && current) {
+        store.update({ aiBasis: buildAiBasis(questioned, current.images.filter((image) => image.role === "standard")) });
+      }
       await store.flush();
       openExamination(examination.id);
     } catch {

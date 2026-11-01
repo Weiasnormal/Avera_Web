@@ -16,6 +16,7 @@ import { useExaminationsStore } from "@/stores/examinations";
 import { EXAMINATION_STEP_IDS, type Examination, type ExaminationStepId } from "@/types/examination";
 
 import { ExaminationStepper } from "./examination-stepper";
+import { ExportPanel, ReportActions } from "./export-step";
 import { GeneralFindingsPanel, SpecificFindingsPanel } from "./findings-steps";
 import { ImagesPanel } from "./images-step";
 import { ChartPanel } from "./chart-step";
@@ -111,7 +112,7 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
     return (
       <div className="flex flex-col gap-5">
         <ConclusionPanel examination={examination} />
-        <UpcomingStep title="Preview and download" />
+        <ExportPanel examination={examination} />
       </div>
     );
   }
@@ -133,6 +134,7 @@ function PhoneSummary({ examination }: { examination: Examination }) {
           <Fact label="Updated" value={formatDate(examination.updatedAt)} />
         </dl>
       </Panel>
+      {examination.images.length ? <ReportActions examination={examination} /> : null}
     </div>
   );
 }

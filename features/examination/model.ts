@@ -112,6 +112,15 @@ export function isImageMarked(examination: Examination, imageId: string) {
   return examination.markers.some((marker) => marker.placements[imageId]);
 }
 
+/** Kept per user, so an examiner's signature follows them to each examination on this device. */
+export function signatureImageId(userId: string) {
+  return `signature-${userId}`;
+}
+
+export function logoImageId(userId: string) {
+  return `logo-${userId}`;
+}
+
 export function examinationTitle(examination: Pick<Examination, "caseName">) {
   return examination.caseName.trim() || "Untitled examination";
 }
