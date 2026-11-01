@@ -3,7 +3,7 @@
 Living record of what changed for the Examination page and what the backend must provide. Update it in every build step.
 
 - **Branch:** `feat/examination-workspace`, created from `feat/web-migration`
-- **Status:** Steps 1 to 3 (workspace, saving, case and images, crop) complete. Steps 4 to 10 pending.
+- **Status:** Steps 1 to 4 (workspace, saving, case and images, crop, mark strokes) complete. Steps 5 to 10 pending.
 - **Commits:** made by the project owner after each approved step.
 
 ## 1. Confirmed decisions
@@ -135,6 +135,8 @@ interface Table {
 | 2 | 2026-11-01 | Added optional `title` prop to the shared evidence image | `components/ui/evidence-image.tsx` |
 | 2 | 2026-11-01 | Owner change: 1 questioned and 4 standards are required before later steps open. Enforced in the stepper, Next button and saved or linked positions | `features/examination/model.ts`, `examination-stepper.tsx`, `examination-workspace.tsx`, `images-step.tsx` |
 | 3 | 2026-11-01 | Added crop step with non-destructive frames, keyboard support, and a shared zoom and pan viewport for Step 4 | `features/examination/crop-step.tsx`, `zoom-viewport.tsx`, `cropped-image.tsx` |
+| 4 | 2026-11-01 | Added mark step: drag or tap numbered arrows, adjustable point and number, checklist, all-signatures view, keyboard support | `features/examination/mark-step.tsx`, `marker-overlay.tsx`, `markers.ts` |
+| 4 | 2026-11-01 | Moved the signature row into a shared component and added a marker color token | `features/examination/signature-strip.tsx`, `crop-step.tsx`, `app/globals.css` |
 
 ## 6. Verification log
 
@@ -144,7 +146,8 @@ interface Table {
 | 2 | Production build. From-case import, blank start, upload, 9-image limit, rejected file message logic, reorder, questioned swap, remove, large view, restored after reload. Same mock setup | Pass |
 | 2 (change) | Later steps locked with missing questioned or standards, message counts down, Next disabled, direct `?step=crop` link blocked, unlocks at 1 questioned and 4 standards | Pass |
 | 3 | Mouse drag to draw, keyboard move and resize, frames kept per signature, Use full image, zoom keeps its place, crop restored after leaving and returning, 768px layout | Pass |
+| 4 | Mouse: drag marker on, tap to place, drag number, drag point. Keyboard moves. Checklist counts and states, including a marker outside a later crop. All-signatures view. Delete with renumbering. Removing a marked image asks first and relocks steps. Crop corner and frame dragging | Pass |
 
-Not yet checked for Step 3: dragging the frame body and corners with a mouse, Ctrl + wheel zoom, the Move the view tool, and real touch or stylus input.
+Not yet checked for Steps 3 and 4: Ctrl + wheel zoom, the Move the view tool, marking while zoomed in, and real touch or stylus input.
 
-Not yet checked: drag and drop of real files with a mouse (tested through the file input only), the rejected-file message after its last fix, removing a marked image (markers arrive in Step 4), real sign-in, real backend, and a real second tab (the conflict was simulated by changing the stored version).
+Not yet checked: drag and drop of real files with a mouse (tested through the file input only), the rejected-file message after its last fix, real sign-in, real backend, and a real second tab (the conflict was simulated by changing the stored version).

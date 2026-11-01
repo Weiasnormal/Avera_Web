@@ -18,6 +18,7 @@ import { EXAMINATION_STEP_IDS, type Examination, type ExaminationStepId } from "
 import { ExaminationStepper } from "./examination-stepper";
 import { ImagesPanel } from "./images-step";
 import { CropPanel } from "./crop-step";
+import { MarkPanel } from "./mark-step";
 import { EXAMINATION_STEPS, examinationTitle, missingForExamination, startedStepCount } from "./model";
 
 function isStepId(value: string | null): value is ExaminationStepId {
@@ -99,6 +100,7 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
     );
   }
   if (step === "crop") return <CropPanel examination={examination} />;
+  if (step === "mark") return <MarkPanel examination={examination} />;
   return <UpcomingStep title={EXAMINATION_STEPS.find((item) => item.id === step)!.title} />;
 }
 

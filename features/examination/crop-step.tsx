@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 import { useExaminationsStore } from "@/stores/examinations";
 import type { Examination, ExaminationImage, NormalizedRect } from "@/types/examination";
 
-import { CroppedImage } from "./cropped-image";
+import { SignatureStrip } from "./signature-strip";
 import { ZoomViewport } from "./zoom-viewport";
 
 // Crops are stored as a frame on the original, so every crop can be changed later.
@@ -187,30 +187,13 @@ export function CropPanel({ examination }: { examination: Examination }) {
       <p className="mb-2.5 text-[13px] text-ink-3 tabular">
         {croppedCount} of {images.length} cropped
       </p>
-      <ul className="mb-4 flex gap-2 overflow-x-auto p-0.5">
-        {images.map((image) => {
-          const isActive = image.id === active.id;
-          return (
-            <li key={image.id} className="w-24 shrink-0">
-              <button
-                type="button"
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => setActiveId(image.id)}
-                className={cn(
-                  "pressable block w-full overflow-hidden rounded-sm border text-left",
-                  isActive ? "border-brand ring-1 ring-brand" : "border-line-strong hover:border-ink-4",
-                )}
-              >
-                <CroppedImage image={image} url={imageUrls[image.id]} alt={`${image.label} preview`} className="aspect-4/3 w-full" />
-                <span className="flex items-center justify-between border-t border-line px-1.5 py-1 text-[12.5px] font-semibold text-ink tabular">
-                  {image.label}
-                  {image.crop ? <Check className="size-3.5 text-brand" aria-label="Cropped" /> : null}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      <SignatureStrip
+        images={images}
+        imageUrls={imageUrls}
+        activeId={active.id}
+        onSelect={setActiveId}
+        badge={(image) => (image.crop ? <Check className="size-3.5 text-brand" aria-label="Cropped" /> : null)}
+      />
 
       <ZoomViewport
         key={active.id}

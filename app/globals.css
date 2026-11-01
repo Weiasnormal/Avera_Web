@@ -48,6 +48,9 @@
   --color-chart-genuine: #16a34a;
   --color-chart-suspected: #e24b4a;
 
+  /* Examiner's arrows on signatures: the red pen of a paper examination. */
+  --color-marker: #d61f45;
+
   --color-danger: #d93a39;
   --color-danger-soft: #fef2f2;
 
