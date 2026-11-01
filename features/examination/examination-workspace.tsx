@@ -18,6 +18,7 @@ import { EXAMINATION_STEP_IDS, type Examination, type ExaminationStepId } from "
 import { ExaminationStepper } from "./examination-stepper";
 import { SpotlightTour, useStepTips } from "./tutorial";
 import { ExportPanel, ReportActions } from "./export-step";
+import { FinishedExamination, FinishExaminationButton } from "./finish-step";
 import { GeneralFindingsPanel, SpecificFindingsPanel } from "./findings-steps";
 import { ImagesPanel } from "./images-step";
 import { ChartPanel } from "./chart-step";
@@ -138,7 +139,7 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
   const current = useExaminationsStore((state) => state.current);
   const status = useExaminationsStore((state) => state.currentStatus);
   const saveStatus = useExaminationsStore((state) => state.saveStatus);
-  const hasExaminationForTips = current?.id === examinationId;
+  const hasExaminationForTips = current?.id === examinationId && !current.finishedAt;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const previousStep = useRef<ExaminationStepId | null>(null);
 
@@ -229,6 +230,15 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-64 w-full rounded-lg" />
       </div>
+    );
+  }
+
+  if (examination.finishedAt) {
+    return (
+      <>
+        <div className="mb-5">{backLink}</div>
+        <FinishedExamination examination={examination} />
+      </>
     );
   }
 
@@ -323,7 +333,9 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
               Next: {next.label}
               <ArrowRight className="size-4" aria-hidden />
             </ButtonLink>
-          ) : null}
+          ) : (
+            <FinishExaminationButton examination={examination} />
+          )}
         </div>
       </div>
 

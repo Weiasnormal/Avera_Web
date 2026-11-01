@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Alert, EmptyState, LoadError } from "@/components/feedback/states";
 import { ConfirmDialog } from "@/components/modals/confirm-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button, IconButton } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { Skeleton } from "@/components/ui/spinner";
@@ -89,7 +90,7 @@ export function ExaminationList() {
               <tr>
                 <th scope="col" className="py-2.5 pr-3 pl-5 font-semibold">Case</th>
                 <th scope="col" className="hidden px-3 py-2.5 font-semibold sm:table-cell">Images</th>
-                <th scope="col" className="hidden px-3 py-2.5 font-semibold sm:table-cell">Steps started</th>
+                <th scope="col" className="hidden px-3 py-2.5 font-semibold sm:table-cell">Progress</th>
                 <th scope="col" className="px-3 py-2.5 font-semibold">Updated</th>
                 <th scope="col" className="py-2.5 pr-3"><span className="sr-only">Actions</span></th>
               </tr>
@@ -108,7 +109,8 @@ export function ExaminationList() {
                   </td>
                   <td className="hidden px-3 py-3.5 text-ink-2 tabular sm:table-cell">{item.images.length}</td>
                   <td className="hidden px-3 py-3.5 text-ink-2 tabular sm:table-cell">
-                    {startedStepCount(item)} of {EXAMINATION_STEPS.length}
+                    {/* Brand, not green: a finished examination says nothing about the verdict. */}
+                    {item.finishedAt ? <Badge tone="brand">Finished</Badge> : `${startedStepCount(item)} of ${EXAMINATION_STEPS.length} steps`}
                   </td>
                   <td className="px-3 py-3.5 whitespace-nowrap text-ink-2">{formatRelativeTime(item.updatedAt)}</td>
                   <td className="relative w-12 py-2 pr-3 text-right">

@@ -42,7 +42,7 @@ async function buildReport(examination: Examination): Promise<ExaminationReport>
 }
 
 /** Things worth checking before printing. None of them block the download. */
-function reportWarnings(examination: Examination) {
+export function reportWarnings(examination: Examination) {
   const warnings: string[] = [];
   if (!examination.caseName.trim()) warnings.push("The case has no name.");
   if (!examination.caseNumber.trim()) warnings.push("The case has no number.");

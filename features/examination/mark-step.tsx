@@ -428,13 +428,17 @@ export function MarkPanel({ examination }: { examination: Examination }) {
                 ) : null}
               </div>
             </div>
-            {markers.length ? (
-              <aside aria-label="Marker checklist" data-tour="checklist" className="min-w-0">
-                <h3 className="text-[13px] font-semibold text-ink">Checklist</h3>
-                <p className="mt-0.5 mb-2 text-[12.5px] text-ink-3 tabular">{missing === 0 ? "Every marker is on every signature." : `${missing} still to place`}</p>
-                <MarkerChecklist examination={examination} activeImageId={active.id} activeNumber={activeNumber} onOpen={openPair} />
-              </aside>
-            ) : null}
+            <aside aria-label="Marker checklist" data-tour="checklist" className="min-w-0 xl:min-w-52 xl:self-start">
+              <h3 className="text-[13px] font-semibold text-ink">Checklist</h3>
+              {markers.length ? (
+                <>
+                  <p className="mt-0.5 mb-2 text-[12.5px] text-ink-3 tabular">{missing === 0 ? "Every marker is on every signature." : `${missing} still to place`}</p>
+                  <MarkerChecklist examination={examination} activeImageId={active.id} activeNumber={activeNumber} onOpen={openPair} />
+                </>
+              ) : (
+                <p className="mt-0.5 text-[12.5px] text-ink-3">Your markers appear here, with a dot for each signature.</p>
+              )}
+            </aside>
           </div>
         </>
       )}

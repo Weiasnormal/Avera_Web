@@ -102,6 +102,8 @@ export interface Examination {
   isPractice?: boolean;
   /** Raised on every save. A stale version is rejected, so two tabs can't overwrite each other. */
   version: number;
+  /** Set when the examiner finishes. Editing stays closed until it's reopened. */
+  finishedAt?: string | null;
   /** Set once the examiner has been through the Crop step. */
   cropReviewed?: boolean;
   caseId: string | null;

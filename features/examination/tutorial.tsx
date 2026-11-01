@@ -35,7 +35,7 @@ const STEP_TIPS: Record<ExaminationStepId, Tip[]> = {
   mark: [
     { target: "palette", title: "Numbered markers", body: "Add a marker for each stroke feature you want to compare. Marker 3 means the same feature on every signature." },
     { target: "stage", title: "Place the arrows", body: "Drag a number onto the signature, or select one and tap the stroke. Then drag the arrow tip or the number to adjust it." },
-    { target: "checklist", title: "See what's missing", body: "This shows which markers are on which signature. Select a dot to go straight there." },
+    { target: "checklist", title: "See what's missing", body: "As you add markers, this shows which ones are on which signature. Select a dot to go straight there." },
   ],
   chart: [
     { target: "panel", title: "Your comparison chart", body: "Each marker becomes a row of close-ups, one per signature. Use + and − to change a whole row, or select a close-up to adjust just that one." },
@@ -48,7 +48,7 @@ const STEP_TIPS: Record<ExaminationStepId, Tip[]> = {
   ],
   conclusion: [
     { target: "conclusion", title: "Your opinion comes first", body: "Write your conclusion before anything else on this step. The AI result stays locked until you do, so it can't influence your opinion." },
-    { target: "report", title: "Download your report", body: "Add your letterhead and signature, preview the pages, then download the PDF." },
+    { target: "report", title: "Download your report", body: "Add your letterhead and signature, then preview and download the PDF. Select Finish examination when you're done." },
   ],
 };
 

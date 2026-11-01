@@ -154,6 +154,8 @@ interface Table {
 | 9 fix | 2026-11-02 | Owner report: practice showed real report details, tips didn't reopen, Crop had no check. Practice now has made-up details and its own signature and logo slots; tips restart per practice run; Crop is checked after moving on, with a note that cropping is optional | `features/examination/practice.ts`, `tutorial.tsx`, `export-step.tsx`, `model.ts`, `crop-step.tsx`, `examination-workspace.tsx`, `report-pdf.ts`, `types/examination.ts` |
 | 10 | 2026-11-02 | Final pass: PDF no longer cuts off long case names or names, letterhead wraps; tour focus starts on Next so Enter advances; divider on fixed table columns; removed step placeholders | `features/examination/report-pdf.ts`, `tutorial.tsx`, `findings-editor.tsx`, `chart-step.tsx`, `examination-workspace.tsx` |
 
+Owner-requested end of flow (2026-11-02): `finishedAt` is stored on the document. Finishing requires a conclusion, closes editing and opens a finished screen; Reopen to edit clears it. The backend should store it and, when examinations are shared, decide who may reopen one.
+
 ## 7. Owner's test before merging
 
 These can't be checked with the mock setup:
@@ -166,6 +168,7 @@ These can't be checked with the mock setup:
 6. Review the wording: conclusion starters and remark presets are this build's own, not an examiner's.
 7. Hit the case limit once, and confirm the message appears in the Run analysis dialog.
 8. Sign out and back in, and confirm work returns for that user and doesn't show for another.
+| 10 add | 2026-11-02 | Owner request: checklist always shown so its tip works; Finish examination with confirmation; finished screens; Finished status in the list | `features/examination/finish-step.tsx`, `mark-step.tsx`, `tutorial.tsx`, `examination-workspace.tsx`, `examination-list.tsx`, `export-step.tsx`, `types/examination.ts` |
 
 ## 6. Verification log
 
@@ -185,8 +188,9 @@ These can't be checked with the mock setup:
 | 9 | Overview on first visit, practice start, spotlight on step tips, tips shown once per step, Show tips replays, no AI in practice, practice and its images removed on leaving, real examination untouched | Pass |
 | 9 fix | A seeded real signature doesn't appear in practice; fake details fill in; tips open on all 7 steps and again on a new run; tips seen in practice don't repeat in real examinations; Crop check appears after leaving; practice notice on every PDF page; practice images removed, real signature kept | Pass |
 | 10 | 9 signatures, 14 markers; delete and add a marker with table text; long names and unbroken words; unprintable characters warned; PDF pagination; Ctrl + wheel event zooms; hand tool pans; keyboard through the tour; How it works; failed AI run shows an error and links nothing; 768px chart and findings; 375px summary and PDF generation with no sideways overflow | Pass |
+| 10 add | Checklist always present, so its tip highlights it. Finish disabled without a conclusion; warnings in the confirmation; practice and real finished screens; Finished badge; a finished examination opens to that screen; reopen keeps the work | Pass |
 
-Superseded by the two rows above: earlier "not yet checked" notes for Ctrl + wheel, hand tool, 9-column chart, 768px findings, marker changes, tips, the PDF practice notice, How it works, keyboard tour and unprintable characters.
+Superseded by the rows above: earlier "not yet checked" notes for Ctrl + wheel, hand tool, 9-column chart, 768px findings, marker changes, tips, the PDF practice notice, How it works, keyboard tour and unprintable characters.
 
 Not yet checked for Step 9: the tips on Crop, Chart, General and Specific, the PDF practice notice, "How it works" reopening the overview, and keyboard use of the tour.
 
