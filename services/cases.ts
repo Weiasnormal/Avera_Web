@@ -358,6 +358,16 @@ export async function downloadReportPdf(caseId: string): Promise<Blob> {
   return blob;
 }
 
+/** The original signatures of a case, for use in a manual examination. */
+export async function downloadCaseSignatures(caseId: string): Promise<{ references: Blob[]; suspected: Blob }> {
+  const blobOf = async (path: string) => (await apiRequest(path, { timeoutMs: 120_000 })).blob();
+  const [suspected, ...references] = await Promise.all([
+    blobOf(API_ENDPOINTS.signatures.getSuspected(caseId, 1)),
+    ...[1, 2, 3, 4].map((index) => blobOf(API_ENDPOINTS.signatures.getReference(caseId, index))),
+  ]);
+  return { references, suspected };
+}
+
 // --- Image URLs (served through the proxy with the session cookie) ----------
 
 export const caseImageUrls = {

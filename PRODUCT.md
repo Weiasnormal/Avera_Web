@@ -19,7 +19,7 @@ AI analysis and a manual examination live in one workspace, and the examiner for
 Physical practice this mirrors: print each signature, draw numbered arrows to stroke features using the same number on every signature, cut a comparison chart of those features, fill general and specific description tables, write a conclusion, then sign. Reference samples came from a university crime laboratory.
 
 ## Capabilities and Constraints
-- An examination has exactly 1 questioned signature and up to 8 references (5 to 9 images is typical).
+- An examination has exactly 1 questioned signature and 4 to 8 references (5 to 9 images). Both minimums must be met before the steps after Images open.
 - The AI analysis pipeline accepts exactly 4 references and 1 questioned signature.
 - Backend endpoints for saving examinations do not exist yet. See `docs/examination/AUDIT.md`.
 - Marking requires a screen 768px or wider. Phones are view and download only.

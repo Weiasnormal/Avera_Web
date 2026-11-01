@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { Alert, EmptyState, LoadError } from "@/components/feedback/states";
-import { buttonClasses, ButtonLink } from "@/components/ui/button";
+import { Button, buttonClasses, ButtonLink } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Fact, Panel } from "@/components/ui/panel";
 import { Skeleton } from "@/components/ui/spinner";
@@ -16,7 +16,9 @@ import { useExaminationsStore } from "@/stores/examinations";
 import { EXAMINATION_STEP_IDS, type Examination, type ExaminationStepId } from "@/types/examination";
 
 import { ExaminationStepper } from "./examination-stepper";
-import { EXAMINATION_STEPS, examinationTitle, startedStepCount } from "./model";
+import { ImagesPanel } from "./images-step";
+import { CropPanel } from "./crop-step";
+import { EXAMINATION_STEPS, examinationTitle, missingForExamination, startedStepCount } from "./model";
 
 function isStepId(value: string | null): value is ExaminationStepId {
   return EXAMINATION_STEP_IDS.includes(value as ExaminationStepId);
@@ -92,10 +94,11 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
     return (
       <div className="flex flex-col gap-5">
         <CaseDetails examination={examination} />
-        <UpcomingStep title="Adding images" />
+        <ImagesPanel examination={examination} />
       </div>
     );
   }
+  if (step === "crop") return <CropPanel examination={examination} />;
   return <UpcomingStep title={EXAMINATION_STEPS.find((item) => item.id === step)!.title} />;
 }
 
@@ -129,7 +132,10 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
 
   const examination = current?.id === examinationId ? current : null;
   const requested = params.get("step");
-  const step: ExaminationStepId = isStepId(requested) ? requested : (examination?.lastStep ?? "images");
+  const locked = examination ? missingForExamination(examination) : null;
+  const wanted: ExaminationStepId = isStepId(requested) ? requested : (examination?.lastStep ?? "images");
+  // A saved position or shared link can't skip the required signatures.
+  const step: ExaminationStepId = locked ? "images" : wanted;
   const stepIndex = EXAMINATION_STEP_IDS.indexOf(step);
   const stepInfo = EXAMINATION_STEPS[stepIndex];
   const hrefFor = (target: ExaminationStepId) => `${pathname}?step=${target}`;
@@ -241,7 +247,7 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
           </Alert>
         ) : null}
 
-        <ExaminationStepper examination={examination} active={step} hrefFor={hrefFor} />
+        <ExaminationStepper examination={examination} active={step} locked={locked} hrefFor={hrefFor} />
 
         <div key={step} className="mt-7 animate-fade-in">
           <div className="mb-5">
@@ -261,7 +267,17 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
           ) : (
             <span />
           )}
-          {next ? (
+          {locked ? (
+            <div className="flex items-center gap-3">
+              <p className="text-[13px] font-medium text-ink-2" role="status">
+                {locked}
+              </p>
+              <Button disabled>
+                Next: {next.label}
+                <ArrowRight className="size-4" aria-hidden />
+              </Button>
+            </div>
+          ) : next ? (
             <ButtonLink href={hrefFor(next.id)} scroll={false}>
               Next: {next.label}
               <ArrowRight className="size-4" aria-hidden />

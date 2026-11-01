@@ -1,4 +1,7 @@
-import type { Examination, ExaminationStepId, FindingsTable } from "@/types/examination";
+import type { Examination, ExaminationImage, ExaminationStepId, FindingsTable } from "@/types/examination";
+
+export const MAX_EXAMINATION_IMAGES = 9;
+export const MIN_STANDARDS = 4;
 
 export interface ExaminationStep {
   id: ExaminationStepId;
@@ -62,6 +65,51 @@ export function createExamination(): Examination {
     createdAt: now,
     updatedAt: now,
   };
+}
+
+/** Questioned first, then standards in the examiner's order, with labels to match. */
+export function arrangeImages(images: ExaminationImage[]): ExaminationImage[] {
+  const questioned = images.filter((image) => image.role === "questioned");
+  const standards = images.filter((image) => image.role === "standard");
+  return [
+    ...questioned.map((image, index) => ({ ...image, label: `Q${index + 1}` })),
+    ...standards.map((image, index) => ({ ...image, label: `S${index + 1}` })),
+  ].map((image, order) => ({ ...image, order }));
+}
+
+/** Everything that points at an image goes with it. */
+export function withoutImage(examination: Examination, imageId: string) {
+  const dropColumn = (table: FindingsTable): FindingsTable => ({
+    ...table,
+    columns: table.columns.filter((column) => column.imageId !== imageId),
+  });
+  return {
+    images: arrangeImages(examination.images.filter((image) => image.id !== imageId)),
+    markers: examination.markers.map((marker) => {
+      const placements = { ...marker.placements };
+      const chartFrames = { ...marker.chartFrames };
+      delete placements[imageId];
+      delete chartFrames[imageId];
+      return { ...marker, placements, chartFrames };
+    }),
+    generalFindings: dropColumn(examination.generalFindings),
+    specificFindings: dropColumn(examination.specificFindings),
+  };
+}
+
+/** What's still missing before the steps after Images open; null when nothing is. */
+export function missingForExamination(examination: Pick<Examination, "images">): string | null {
+  const hasQuestioned = examination.images.some((image) => image.role === "questioned");
+  const standards = examination.images.filter((image) => image.role === "standard").length;
+  const needed = Math.max(0, MIN_STANDARDS - standards);
+  const standardsText = `${needed} more standard${needed === 1 ? "" : "s"}`;
+  if (!hasQuestioned && needed > 0) return `Add the questioned signature and ${standardsText} to continue.`;
+  if (!hasQuestioned) return "Add the questioned signature to continue.";
+  return needed > 0 ? `Add ${standardsText} to continue.` : null;
+}
+
+export function isImageMarked(examination: Examination, imageId: string) {
+  return examination.markers.some((marker) => marker.placements[imageId]);
 }
 
 export function examinationTitle(examination: Pick<Examination, "caseName">) {

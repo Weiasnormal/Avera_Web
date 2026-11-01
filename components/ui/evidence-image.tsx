@@ -15,11 +15,13 @@ export function EvidenceImage({
   alt,
   className,
   fit = "contain",
+  title,
 }: {
   src: string | null;
   alt: string;
   className?: string;
   fit?: "contain" | "cover";
+  title?: string;
 }) {
   const [state, setState] = useState<{ src: string | null; status: "loading" | "loaded" | "error" }>({
     src,
@@ -29,7 +31,7 @@ export function EvidenceImage({
   const status = state.src === src ? state.status : "loading";
 
   return (
-    <div className={cn("evidence-bg relative overflow-hidden", className)}>
+    <div className={cn("evidence-bg relative overflow-hidden", className)} title={title}>
       {src && status !== "error" ? (
         // eslint-disable-next-line @next/next/no-img-element -- authenticated proxy image, not optimizable
         <img

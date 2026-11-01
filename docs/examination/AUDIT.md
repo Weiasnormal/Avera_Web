@@ -3,7 +3,7 @@
 Living record of what changed for the Examination page and what the backend must provide. Update it in every build step.
 
 - **Branch:** `feat/examination-workspace`, created from `feat/web-migration`
-- **Status:** Step 1 (page, stepper, on-device saving) complete. Steps 2 to 10 pending.
+- **Status:** Steps 1 to 3 (workspace, saving, case and images, crop) complete. Steps 4 to 10 pending.
 - **Commits:** made by the project owner after each approved step.
 
 ## 1. Confirmed decisions
@@ -13,11 +13,11 @@ Living record of what changed for the Examination page and what the backend must
 | Page | "Examination" in the examiner sidebar, at `/examinations` |
 | Access | Examiners only, private to the author. Admin read-only review comes after the backend exists |
 | Source | Start from an existing Avera case, or start blank and upload |
-| Images | Exactly 1 questioned plus references, examiner-tagged. Maximum 9 in total, 5 to 9 suggested |
+| Images | Exactly 1 questioned plus 4 to 8 references, examiner-tagged (5 to 9 images). Later steps stay locked until 1 questioned and 4 references are added |
 | Markers | Shared numbers: marker N is one feature on every image, and each marker is one table row |
 | Chart crops | Generated around each marker, and any cell can be re-framed by hand |
 | Tables | Rows come from markers and columns from images. "Same for all standards" fills across. Rows and columns can be added, removed, renamed and reordered |
-| Steps | 1 Case and images, 2 Crop, 3 Mark strokes, 4 Comparison chart, 5 General findings, 6 Specific findings, 7 Conclusion and export. All steps are freely reachable |
+| Steps | 1 Case and images, 2 Crop, 3 Mark strokes, 4 Comparison chart, 5 General findings, 6 Specific findings, 7 Conclusion and export. All steps are freely reachable once the image minimum is met |
 | AI result | Hidden until the conclusion is written. Excluded from the PDF unless the examiner opts in |
 | AI analysis | Offered after the conclusion on blank-start examinations. Shows a notice that AI uses 4 references, and a picker for which 4 |
 | PDF identity | Organization letterhead and optional logo, with a small "Prepared with Avera" footer |
@@ -114,6 +114,7 @@ interface Table {
 
 ### Backend considerations
 
+- Starting from a case currently downloads the 5 signatures through the existing signature endpoints and copies them into the examination. A server-side copy would be better once `POST /examinations` exists, for example by accepting `caseId` and copying the files there.
 - Evidence retention, deletion and audit policy need an owner.
 - Whether to keep a version history of signed opinions is undecided.
 - Downloaded PDFs are not recorded anywhere unless the backend adds an export log.
@@ -127,11 +128,23 @@ interface Table {
 | 1 | 2026-11-01 | Added list page, workspace, 7-step navigation and phone summary | `app/(examiner)/examinations/**`, `features/examination/examination-list.tsx`, `examination-workspace.tsx`, `examination-stepper.tsx` |
 | 1 | 2026-11-01 | Added sidebar item and route, and protected the route as examiner-only | `components/navigation/app-shell.tsx`, `lib/routes.ts`, `proxy.ts` |
 | 1 | 2026-11-01 | Sign-out now saves pending edits and clears the in-memory copy. Saved work stays on the device | `components/providers/session-provider.tsx` |
+| 2 | 2026-11-01 | Added image store actions: add with validation, remove with cascade to markers and columns, set questioned, reorder | `stores/examinations.ts`, `features/examination/model.ts`, `types/examination.ts` |
+| 2 | 2026-11-01 | Added case details and all-signatures sheet | `features/examination/images-step.tsx`, `examination-workspace.tsx` |
+| 2 | 2026-11-01 | Added new-examination dialog with blank and from-case starts. The case list hides status and verdict to protect the blind examination | `features/examination/new-examination-dialog.tsx`, `examination-list.tsx` |
+| 2 | 2026-11-01 | Added case signature download | `services/cases.ts` (`downloadCaseSignatures`) |
+| 2 | 2026-11-01 | Added optional `title` prop to the shared evidence image | `components/ui/evidence-image.tsx` |
+| 2 | 2026-11-01 | Owner change: 1 questioned and 4 standards are required before later steps open. Enforced in the stepper, Next button and saved or linked positions | `features/examination/model.ts`, `examination-stepper.tsx`, `examination-workspace.tsx`, `images-step.tsx` |
+| 3 | 2026-11-01 | Added crop step with non-destructive frames, keyboard support, and a shared zoom and pan viewport for Step 4 | `features/examination/crop-step.tsx`, `zoom-viewport.tsx`, `cropped-image.tsx` |
 
 ## 6. Verification log
 
 | Step | Checked | Result |
 | --- | --- | --- |
 | 1 | Create, edit, autosave, leave and return, resume at last step, delete, conflict blocks overwrite; layouts at 768px and 375px. Run against a local mock backend with a local test session | Pass |
+| 2 | Production build. From-case import, blank start, upload, 9-image limit, rejected file message logic, reorder, questioned swap, remove, large view, restored after reload. Same mock setup | Pass |
+| 2 (change) | Later steps locked with missing questioned or standards, message counts down, Next disabled, direct `?step=crop` link blocked, unlocks at 1 questioned and 4 standards | Pass |
+| 3 | Mouse drag to draw, keyboard move and resize, frames kept per signature, Use full image, zoom keeps its place, crop restored after leaving and returning, 768px layout | Pass |
 
-Not yet checked: real sign-in, real backend, and a real second tab (the conflict was simulated by changing the stored version).
+Not yet checked for Step 3: dragging the frame body and corners with a mouse, Ctrl + wheel zoom, the Move the view tool, and real touch or stylus input.
+
+Not yet checked: drag and drop of real files with a mouse (tested through the file input only), the rejected-file message after its last fix, removing a marked image (markers arrive in Step 4), real sign-in, real backend, and a real second tab (the conflict was simulated by changing the stored version).

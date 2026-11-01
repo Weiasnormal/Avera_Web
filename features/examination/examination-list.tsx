@@ -2,7 +2,6 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Alert, EmptyState, LoadError } from "@/components/feedback/states";
@@ -17,9 +16,9 @@ import { toast } from "@/stores/toast";
 import type { Examination } from "@/types/examination";
 
 import { EXAMINATION_STEPS, examinationTitle, startedStepCount } from "./model";
+import { NewExaminationDialog } from "./new-examination-dialog";
 
 export function ExaminationList() {
-  const router = useRouter();
   const items = useExaminationsStore((state) => state.items);
   const status = useExaminationsStore((state) => state.listStatus);
   const [creating, setCreating] = useState(false);
@@ -29,17 +28,6 @@ export function ExaminationList() {
   useEffect(() => {
     void useExaminationsStore.getState().loadList();
   }, []);
-
-  const startExamination = async () => {
-    setCreating(true);
-    try {
-      const examination = await useExaminationsStore.getState().create();
-      router.push(routes.examiner.examination(examination.id));
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not start the examination.");
-      setCreating(false);
-    }
-  };
 
   const confirmDelete = async () => {
     if (!pendingDelete) return;
@@ -56,7 +44,7 @@ export function ExaminationList() {
   };
 
   const newButton = (
-    <Button icon={<Plus className="size-4" />} loading={creating} onClick={() => void startExamination()}>
+    <Button icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>
       New examination
     </Button>
   );
@@ -87,7 +75,7 @@ export function ExaminationList() {
           />
         </Panel>
       ) : (
-        <Panel bodyClassName="p-0">
+        <Panel className="overflow-hidden" bodyClassName="p-0!">
           <table className="w-full text-left text-[13.5px]">
             <thead className="border-b border-line bg-canvas text-[12px] text-ink-3">
               <tr>
@@ -127,6 +115,7 @@ export function ExaminationList() {
         </Panel>
       )}
 
+      <NewExaminationDialog open={creating} onClose={() => setCreating(false)} />
       <ConfirmDialog
         open={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}

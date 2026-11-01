@@ -20,6 +20,10 @@ export interface ExaminationImage {
   /** Q1, S1, S2... */
   label: string;
   order: number;
+  sourceName: string;
+  /** Pixel size of the original, kept for layout and the exported PDF. */
+  width: number;
+  height: number;
   crop: NormalizedRect | null;
 }
 
