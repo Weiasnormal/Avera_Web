@@ -94,12 +94,19 @@ export function NewExaminationDialog({ open, onClose }: { open: boolean; onClose
     onClose();
   };
 
+  // Next keeps the list page alive while hidden, so leave this dialog closed and idle.
+  const openExamination = (id: string) => {
+    setBusy(null);
+    close();
+    router.push(routes.examiner.examination(id));
+  };
+
   const startBlank = async () => {
     setBusy("blank");
     setError(null);
     try {
       const examination = await useExaminationsStore.getState().create();
-      router.push(routes.examiner.examination(examination.id));
+      openExamination(examination.id);
     } catch (startError) {
       setError(startError instanceof Error ? startError.message : "Could not start the examination.");
       setBusy(null);
@@ -124,7 +131,7 @@ export function NewExaminationDialog({ open, onClose }: { open: boolean; onClose
       ]);
       if (failures.length) throw new Error(failures.join(" "));
       await store.flush();
-      router.push(routes.examiner.examination(examination.id));
+      openExamination(examination.id);
     } catch {
       setError("We couldn't get this case's signatures. Check your connection and try again, or start blank.");
       setBusy(null);

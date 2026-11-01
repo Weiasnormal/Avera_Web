@@ -16,6 +16,7 @@ import { useExaminationsStore } from "@/stores/examinations";
 import { EXAMINATION_STEP_IDS, type Examination, type ExaminationStepId } from "@/types/examination";
 
 import { ExaminationStepper } from "./examination-stepper";
+import { GeneralFindingsPanel, SpecificFindingsPanel } from "./findings-steps";
 import { ImagesPanel } from "./images-step";
 import { ChartPanel } from "./chart-step";
 import { CropPanel } from "./crop-step";
@@ -103,6 +104,8 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
   if (step === "crop") return <CropPanel examination={examination} />;
   if (step === "mark") return <MarkPanel examination={examination} />;
   if (step === "chart") return <ChartPanel examination={examination} />;
+  if (step === "general") return <GeneralFindingsPanel examination={examination} />;
+  if (step === "specific") return <SpecificFindingsPanel examination={examination} />;
   return <UpcomingStep title={EXAMINATION_STEPS.find((item) => item.id === step)!.title} />;
 }
 

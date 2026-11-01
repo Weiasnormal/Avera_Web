@@ -47,6 +47,10 @@ export interface FindingsColumn {
   title: string;
   /** Set when the column follows an image; null for columns like Remarks. */
   imageId: string | null;
+  /** The remarks column offers preset wording. */
+  isRemarks?: boolean;
+  /** Renamed by the examiner, so the title no longer follows the image's label. */
+  customTitle?: boolean;
 }
 
 export interface FindingsRow {
@@ -55,11 +59,20 @@ export interface FindingsRow {
   /** Set when the row follows a marker. */
   markerNumber: number | null;
   cells: Record<string, string>;
+  /** Renamed by the examiner, so the title no longer follows the marker's number. */
+  customTitle?: boolean;
 }
 
 export interface FindingsTable {
   columns: FindingsColumn[];
   rows: FindingsRow[];
+  /** Heading of the first column. */
+  rowHeader?: string;
+  /** Set once automatic rows and columns have been built. */
+  synced?: boolean;
+  /** Automatic columns and rows the examiner removed; they stay out until restored. */
+  dismissedImageIds?: string[];
+  dismissedMarkers?: number[];
 }
 
 export const EXAMINATION_STEP_IDS = ["images", "crop", "mark", "chart", "general", "specific", "conclusion"] as const;

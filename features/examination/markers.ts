@@ -122,6 +122,7 @@ export function withoutMarker(examination: Pick<Examination, "markers" | "specif
   const shift = (value: number) => (value > number ? value - 1 : value);
   const specificFindings: FindingsTable = {
     ...examination.specificFindings,
+    dismissedMarkers: examination.specificFindings.dismissedMarkers?.filter((value) => value !== number).map(shift),
     rows: examination.specificFindings.rows
       .filter((row) => row.markerNumber !== number)
       .map((row) => {
