@@ -3,7 +3,7 @@
 Living record of what changed for the Examination page and what the backend must provide. Update it in every build step.
 
 - **Branch:** `feat/examination-workspace`, created from `feat/web-migration`
-- **Status:** Build steps 1 to 6 (workspace, saving, case and images, crop, mark strokes, comparison chart, findings tables) complete. Build steps 7 to 10 pending.
+- **Status:** Build steps 1 to 7 (workspace, saving, case and images, crop, mark strokes, comparison chart, findings tables, conclusion and AI) complete. Build steps 8 to 10 pending.
 - **Commits:** made by the project owner after each approved step.
 
 ## 1. Confirmed decisions
@@ -140,6 +140,8 @@ interface Table {
 | 5 | 2026-11-01 | Added comparison chart: generated close-ups, per-row show more or less, per-cell adjust and reset. Added optional `chartScale` to markers. The crop stage now accepts any frame | `features/examination/chart-step.tsx`, `markers.ts`, `crop-step.tsx`, `model.ts`, `types/examination.ts` |
 | 6 | 2026-11-01 | Added General and Specific findings: automatic rows and columns, same text for all standards, remarks presets with own wording, rename, move, add, remove and restore | `features/examination/findings.ts`, `findings-editor.tsx`, `findings-steps.tsx`, `types/examination.ts`, `markers.ts` |
 | 6 | 2026-11-01 | Fixed the new-examination dialog staying open on the hidden list page after starting | `features/examination/new-examination-dialog.tsx` |
+| 7 | 2026-11-01 | Added conclusion with optional starting wording, AI result locked until a conclusion exists, a saved copy of the result, a note when the conclusion changes afterwards, and a report opt-in | `features/examination/conclusion-step.tsx`, `types/examination.ts` |
+| 7 | 2026-11-01 | Added AI run for unlinked examinations: 4-reference notice and picker, crops applied, sent through the existing analysis pipeline, examination linked to the new case | `features/examination/run-ai-dialog.tsx` |
 
 ## 6. Verification log
 
@@ -152,6 +154,9 @@ interface Table {
 | 4 | Mouse: drag marker on, tap to place, drag number, drag point. Keyboard moves. Checklist counts and states, including a marker outside a later crop. All-signatures view. Delete with renumbering. Removing a marked image asks first and relocks steps. Crop corner and frame dragging | Pass |
 | 5 | Empty state, generated cells, Not marked cells, show more per row, adjust with a mouse, Adjusted label, reset to automatic. Marking while zoomed lands on the exact point. Chart and mark layouts at 768px | Pass |
 | 6 | Automatic columns and rows, copy across standards and overwrite warning, remarks preset and own wording, remove with warning, restore, add, reorder, typed text growing the cell, all restored after reload | Pass |
+| 7 | AI hidden before a conclusion, no verdict text on the page, reveal shows model values, change note, opt-in. With 6 standards: picker enforces 4, Run disabled until valid, mock received 1 questioned and 4 references, examination linked to the case | Pass |
+
+Conclusion wordings and remark presets are this build's wording. Not yet checked for Step 7: the real AI pipeline, a failed run, the case limit message, a run with crops (mock doesn't inspect uploads).
 
 Remark presets (Significant difference, Similar, Not comparable) are this build's wording and need the owner's or an examiner's review. Not yet checked for Step 6: 768px layout, sticky first column with many columns, marker changes updating an existing table.
 

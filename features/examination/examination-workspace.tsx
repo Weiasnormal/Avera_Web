@@ -19,6 +19,7 @@ import { ExaminationStepper } from "./examination-stepper";
 import { GeneralFindingsPanel, SpecificFindingsPanel } from "./findings-steps";
 import { ImagesPanel } from "./images-step";
 import { ChartPanel } from "./chart-step";
+import { ConclusionPanel } from "./conclusion-step";
 import { CropPanel } from "./crop-step";
 import { MarkPanel } from "./mark-step";
 import { EXAMINATION_STEPS, examinationTitle, missingForExamination, startedStepCount } from "./model";
@@ -106,6 +107,14 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
   if (step === "chart") return <ChartPanel examination={examination} />;
   if (step === "general") return <GeneralFindingsPanel examination={examination} />;
   if (step === "specific") return <SpecificFindingsPanel examination={examination} />;
+  if (step === "conclusion") {
+    return (
+      <div className="flex flex-col gap-5">
+        <ConclusionPanel examination={examination} />
+        <UpcomingStep title="Preview and download" />
+      </div>
+    );
+  }
   return <UpcomingStep title={EXAMINATION_STEPS.find((item) => item.id === step)!.title} />;
 }
 

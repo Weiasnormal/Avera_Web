@@ -78,6 +78,16 @@ export interface FindingsTable {
 export const EXAMINATION_STEP_IDS = ["images", "crop", "mark", "chart", "general", "specific", "conclusion"] as const;
 export type ExaminationStepId = (typeof EXAMINATION_STEP_IDS)[number];
 
+export interface ExaminationAiResult {
+  verdict: "Genuine" | "Suspected";
+  confidence: number | null;
+  distance: number;
+  threshold: number;
+  revealedAt: string;
+  /** The conclusion as it stood when the AI result was first seen. */
+  conclusionAtReveal: string;
+}
+
 export interface Examination {
   id: string;
   /** Raised on every save. A stale version is rejected, so two tabs can't overwrite each other. */
@@ -90,6 +100,8 @@ export interface Examination {
   generalFindings: FindingsTable;
   specificFindings: FindingsTable;
   conclusion: string;
+  /** Copied when revealed, after the conclusion is written. */
+  aiResult?: ExaminationAiResult | null;
   includeAiResult: boolean;
   letterhead: { lines: string[]; logoImageId: string | null };
   signOff: { name: string; title: string; credentials: string; useSignatureImage: boolean };
