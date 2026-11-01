@@ -14,8 +14,10 @@ import { safeFileSegment } from "@/lib/format";
 import { examinationRepository } from "@/services/examinations";
 import { useExaminationsStore } from "@/stores/examinations";
 import { useSessionStore } from "@/stores/session";
+import { toast } from "@/stores/toast";
 import type { Examination } from "@/types/examination";
 
+import { currentAiResult } from "./ai-basis";
 import { missingPlacements } from "./markers";
 import { logoImageId, signatureImageId } from "./model";
 import type { ExaminationReport } from "./report-pdf";
@@ -25,7 +27,11 @@ function currentUserId() {
 }
 
 function reportFileName(examination: Examination) {
-  return `Examination_Report_${safeFileSegment(examination.caseNumber.trim() || examination.id)}.pdf`;
+  // A timestamp keeps each export distinct, so a newer file can't be mistaken for an older one.
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  return `Examination_Report_${safeFileSegment(examination.caseNumber.trim() || examination.id)}_${stamp}.pdf`;
 }
 
 /** Generates the PDF on demand. pdf-lib loads only when it's needed. */
@@ -53,7 +59,11 @@ export function ReportActions({ examination, size = "md" }: { examination: Exami
   const [preview, setPreview] = useState<{ url: string; blob: Blob } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [unsupported, setUnsupported] = useState<string[]>([]);
-  const fileName = reportFileName(examination);
+
+  const announce = (fileName: string) => {
+    const withAi = examination.includeAiResult && currentAiResult(examination);
+    toast.success(`Downloaded ${withAi ? "with" : "without"} the AI result: ${fileName}`);
+  };
 
   useEffect(
     () => () => {
@@ -69,7 +79,11 @@ export function ReportActions({ examination, size = "md" }: { examination: Exami
       const report = await buildReport(examination);
       setUnsupported(report.unsupportedCharacters);
       if (kind === "preview") setPreview({ url: URL.createObjectURL(report.blob), blob: report.blob });
-      else triggerDownload(report.blob, fileName);
+      else {
+        const fileName = reportFileName(examination);
+        triggerDownload(report.blob, fileName);
+        announce(fileName);
+      }
     } catch (buildError) {
       setError(buildError instanceof Error && buildError.message ? buildError.message : "The report couldn't be created. Try again.");
     } finally {
@@ -100,10 +114,18 @@ export function ReportActions({ examination, size = "md" }: { examination: Exami
         onClose={() => setPreview(null)}
         size="full"
         title="Examination report"
-        description={fileName}
+        description="Check the pages, then download."
         bodyClassName="px-0 sm:px-0 pb-0"
         footer={
-          <Button icon={<Download className="size-4" aria-hidden />} onClick={() => preview && triggerDownload(preview.blob, fileName)}>
+          <Button
+            icon={<Download className="size-4" aria-hidden />}
+            onClick={() => {
+              if (!preview) return;
+              const fileName = reportFileName(examination);
+              triggerDownload(preview.blob, fileName);
+              announce(fileName);
+            }}
+          >
             Download PDF
           </Button>
         }

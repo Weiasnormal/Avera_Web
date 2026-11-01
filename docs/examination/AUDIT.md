@@ -3,7 +3,7 @@
 Living record of what changed for the Examination page and what the backend must provide. Update it in every build step.
 
 - **Branch:** `feat/examination-workspace`, created from `feat/web-migration`
-- **Status:** Build steps 1 to 8 (workspace, saving, case and images, crop, mark strokes, comparison chart, findings tables, conclusion and AI, PDF export) complete. Build steps 9 and 10 pending.
+- **Status:** Build steps 1 to 9 (workspace, saving, case and images, crop, mark strokes, comparison chart, findings tables, conclusion and AI, PDF export, tutorial) complete. Build step 10 (final pass) pending.
 - **Commits:** made by the project owner after each approved step.
 
 ## 1. Confirmed decisions
@@ -148,6 +148,9 @@ interface Table {
 | 7 | 2026-11-01 | Added AI run for unlinked examinations: 4-reference notice and picker, crops applied, sent through the existing analysis pipeline, examination linked to the new case | `features/examination/run-ai-dialog.tsx` |
 | 7 fix | 2026-11-01 | Owner-reported bug: results stayed on the original case after signatures changed. Added `aiBasis` tracking and Run separate analysis | `features/examination/ai-basis.ts`, `conclusion-step.tsx`, `run-ai-dialog.tsx`, `new-examination-dialog.tsx`, `types/examination.ts` |
 | 8 | 2026-11-01 | Added PDF report in the scanned layout, report details, preview, download and phone download. Added `pdf-lib`, loaded on demand | `features/examination/report-pdf.ts`, `export-step.tsx`, `model.ts`, `examination-workspace.tsx`, `features/results/report-actions.tsx`, `package.json` |
+| 8 fix | 2026-11-01 | Owner report: include box seemed ignored. Could not be reproduced: a second download did contain the result. Made files unique with a timestamp, added a confirmation naming whether the AI result is in, and made the AI section a table | `features/examination/export-step.tsx`, `report-pdf.ts` |
+| 8 fix | 2026-11-01 | Owner request: Keep this result or Run new analysis when the conclusion was edited or standards were added afterwards. Added notes for standards the analysis didn't compare, and a new analysis option at all times | `features/examination/conclusion-step.tsx`, `ai-basis.ts`, `types/examination.ts` |
+| 9 | 2026-11-01 | Added first-visit overview, per-step spotlight tips with Show tips, and a practice examination with drawn signatures, no AI, a practice notice on the PDF, and removal on returning to the list | `features/examination/tutorial.tsx`, `practice.ts`, `examination-list.tsx`, `examination-workspace.tsx`, `crop-step.tsx`, `mark-step.tsx`, `stores/examinations.ts` |
 
 ## 6. Verification log
 
@@ -163,6 +166,10 @@ interface Table {
 | 7 | AI hidden before a conclusion, no verdict text on the page, reveal shows model values, change note, opt-in. With 6 standards: picker enforces 4, Run disabled until valid, mock received 1 questioned and 4 references, examination linked to the case | Pass |
 | 7 fix | Replacing a standard from a case hides the old result, blocks Reveal, offers Run separate analysis. New run links the new case with 4 references and clears the old result. A ticked include box doesn't print a stale result | Pass |
 | 8 | Real PDFs rendered and read page by page: 5 and 9 signatures, letterhead, logo, signature, chart, long cell across pages, repeated headings, conclusion, AI note, marked signatures, accented characters | Pass |
+| 8 fix | Export, tick include, export again: second PDF contains the AI section. Added then removed a standard: note appears then clears. Edited conclusion: Keep clears it. Timestamped name and confirmation shown | Pass |
+| 9 | Overview on first visit, practice start, spotlight on step tips, tips shown once per step, Show tips replays, no AI in practice, practice and its images removed on leaving, real examination untouched | Pass |
+
+Not yet checked for Step 9: the tips on Crop, Chart, General and Specific, the PDF practice notice, "How it works" reopening the overview, and keyboard use of the tour.
 
 Not yet checked for Step 8: the final signature line order (drawn on top; built and compiled only), a downloaded file through the browser's save flow, the phone download button, characters the font can't print, printing on paper. Conclusion wording doesn't update if signatures are added afterwards. The page order of the scans was inferred, as the scans arrived unordered.
 

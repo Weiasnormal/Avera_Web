@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { CircleHelp, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -17,6 +17,7 @@ import type { Examination } from "@/types/examination";
 
 import { EXAMINATION_STEPS, examinationTitle, startedStepCount } from "./model";
 import { NewExaminationDialog } from "./new-examination-dialog";
+import { ExaminationIntro, useExaminationIntro } from "./tutorial";
 
 export function ExaminationList() {
   const items = useExaminationsStore((state) => state.items);
@@ -24,6 +25,8 @@ export function ExaminationList() {
   const [creating, setCreating] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Examination | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const intro = useExaminationIntro();
 
   useEffect(() => {
     void useExaminationsStore.getState().loadList();
@@ -44,9 +47,14 @@ export function ExaminationList() {
   };
 
   const newButton = (
-    <Button icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>
-      New examination
-    </Button>
+    <>
+      <Button variant="ghost" icon={<CircleHelp className="size-4" aria-hidden />} onClick={intro.show}>
+        How it works
+      </Button>
+      <Button icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>
+        New examination
+      </Button>
+    </>
   );
 
   return (
@@ -115,6 +123,7 @@ export function ExaminationList() {
         </Panel>
       )}
 
+      <ExaminationIntro open={intro.open} onClose={intro.close} />
       <NewExaminationDialog open={creating} onClose={() => setCreating(false)} />
       <ConfirmDialog
         open={pendingDelete !== null}

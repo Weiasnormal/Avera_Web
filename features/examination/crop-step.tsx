@@ -190,6 +190,7 @@ export function CropPanel({ examination }: { examination: Examination }) {
       <p className="mb-2.5 text-[13px] text-ink-3 tabular">
         {croppedCount} of {images.length} cropped
       </p>
+      <div data-tour="strip">
       <SignatureStrip
         images={images}
         imageUrls={imageUrls}
@@ -197,7 +198,9 @@ export function CropPanel({ examination }: { examination: Examination }) {
         onSelect={setActiveId}
         badge={(image) => (image.crop ? <Check className="size-3.5 text-brand" aria-label="Cropped" /> : null)}
       />
+      </div>
 
+      <div data-tour="stage">
       <ZoomViewport
         key={active.id}
         aspect={active.width / active.height}
@@ -225,6 +228,7 @@ export function CropPanel({ examination }: { examination: Examination }) {
         {/* The crop value in the key resets the frame when "Use full image" is pressed. */}
         <CropStage key={active.crop ? "cropped" : "full"} image={active} url={imageUrls[active.id]} frame={active.crop} onCommit={(rect) => setCrop(active.id, rect)} />
       </ZoomViewport>
+      </div>
       <p className="mt-2.5 text-[13px] text-ink-3">Drag on the image to draw a frame, then drag the frame or its corners to adjust.</p>
     </Panel>
   );

@@ -16,7 +16,7 @@ import { useExaminationsStore } from "@/stores/examinations";
 import { useSessionStore } from "@/stores/session";
 import type { Examination } from "@/types/examination";
 
-import { currentAiResult, hasAiBasisChanged } from "./ai-basis";
+import { currentAiResult, hasAiBasisChanged, standardsOutsideAiBasis } from "./ai-basis";
 import { RunAiDialog } from "./run-ai-dialog";
 
 function exhibitRange(examination: Examination) {
@@ -45,6 +45,28 @@ function AiPanel({ examination }: { examination: Examination }) {
   const hasConclusion = examination.conclusion.trim().length > 0;
   const changed = hasAiBasisChanged(examination);
   const result = currentAiResult(examination);
+  const conclusionChanged = result ? result.conclusionAtReveal.trim() !== examination.conclusion.trim() : false;
+  const unacceptedExtras = result ? standardsOutsideAiBasis(examination).filter((image) => !result.acceptedExtraImageIds?.includes(image.id)) : [];
+
+  // The examiner's call: the result stands as it is, on the record of what it compared.
+  const keepResult = () => {
+    if (!result) return;
+    update({
+      aiResult: {
+        ...result,
+        conclusionAtReveal: examination.conclusion,
+        acceptedExtraImageIds: standardsOutsideAiBasis(examination).map((image) => image.id),
+      },
+    });
+  };
+
+  if (examination.isPractice) {
+    return (
+      <Panel title="AI comparison">
+        <p className="text-[13.5px] text-ink-2">In a real examination, you can compare your opinion with Avera&apos;s model here, once your conclusion is written. It isn&apos;t available in practice.</p>
+      </Panel>
+    );
+  }
 
   const reveal = async () => {
     if (!examination.caseId) return;
@@ -89,8 +111,25 @@ function AiPanel({ examination }: { examination: Examination }) {
           <p className="text-[13px] text-ink-3">
             Seen {formatDateTime(result.revealedAt)}. The model supports your judgment and doesn&apos;t replace it. The confidence is a score, not a statistical probability.
           </p>
-          {result.conclusionAtReveal !== examination.conclusion ? (
-            <Alert tone="caution">Your conclusion has changed since you saw this AI result.</Alert>
+          {conclusionChanged || unacceptedExtras.length ? (
+            <Alert tone="caution" title="Keep this result or run a new analysis?">
+              <ul>
+                {conclusionChanged ? <li>You edited your conclusion after seeing this result.</li> : null}
+                {unacceptedExtras.length ? (
+                  <li>
+                    The analysis didn&apos;t compare {unacceptedExtras.map((image) => image.label).join(", ")}, added afterwards.
+                  </li>
+                ) : null}
+              </ul>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={keepResult}>
+                  Keep this result
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setRunning(true)}>
+                  Run new analysis
+                </Button>
+              </div>
+            </Alert>
           ) : null}
           <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
             <input
@@ -101,11 +140,18 @@ function AiPanel({ examination }: { examination: Examination }) {
             />
             Include this AI result in the report
           </label>
-          {examination.caseId ? (
-            <Link href={routes.examiner.caseResult(examination.caseId)} className="w-fit text-[13px] font-semibold text-brand-strong underline">
-              Open the full AI result
-            </Link>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-4">
+            {examination.caseId ? (
+              <Link href={routes.examiner.caseResult(examination.caseId)} className="w-fit text-[13px] font-semibold text-brand-strong underline">
+                Open the full AI result
+              </Link>
+            ) : null}
+            {conclusionChanged || unacceptedExtras.length ? null : (
+              <button type="button" onClick={() => setRunning(true)} className="text-[13px] font-semibold text-brand-strong underline">
+                Run new analysis
+              </button>
+            )}
+          </div>
         </div>
       ) : !hasConclusion ? (
         <p className="flex items-center gap-2 text-[13.5px] text-ink-2">
@@ -143,7 +189,8 @@ export function ConclusionPanel({ examination }: { examination: Examination }) {
   const isEmpty = examination.conclusion.trim().length === 0;
   return (
     <div className="flex flex-col gap-5">
-      <Panel title="Your conclusion">
+      <Panel title="Your conclusion" className="scroll-mt-20">
+        <div data-tour="conclusion">
         <TextAreaField
           label="Conclusion"
           value={examination.conclusion}
@@ -159,6 +206,7 @@ export function ConclusionPanel({ examination }: { examination: Examination }) {
             ))}
           </div>
         ) : null}
+        </div>
       </Panel>
       <AiPanel examination={examination} />
     </div>

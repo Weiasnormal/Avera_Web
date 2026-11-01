@@ -84,8 +84,10 @@ export interface ExaminationAiResult {
   distance: number;
   threshold: number;
   revealedAt: string;
-  /** The conclusion as it stood when the AI result was first seen. */
+  /** The conclusion as it stood when the AI result was first seen or last kept. */
   conclusionAtReveal: string;
+  /** Standards added after the analysis that the examiner chose to keep the result for. */
+  acceptedExtraImageIds?: string[];
 }
 
 /** The signatures and crops the linked AI analysis actually compared. */
@@ -96,6 +98,8 @@ export interface AiBasis {
 
 export interface Examination {
   id: string;
+  /** A tutorial examination with made-up signatures. Removed on leaving; never linked to AI. */
+  isPractice?: boolean;
   /** Raised on every save. A stale version is rejected, so two tabs can't overwrite each other. */
   version: number;
   caseId: string | null;

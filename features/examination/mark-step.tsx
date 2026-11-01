@@ -370,7 +370,8 @@ export function MarkPanel({ examination }: { examination: Examination }) {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto]">
             <div className="min-w-0">
               {/* Directly above the signature, so a marker and its drop spot fit on one screen. */}
-              <div className="mb-2.5">{palette}</div>
+              <div className="mb-2.5" data-tour="palette">{palette}</div>
+              <div data-tour="stage">
               <ZoomViewport
                 key={active.id}
                 aspect={viewAspect(active)}
@@ -395,6 +396,7 @@ export function MarkPanel({ examination }: { examination: Examination }) {
                   onPlaced={selectNextMissing}
                 />
               </ZoomViewport>
+              </div>
               <div className="mt-2.5 flex min-h-8 flex-wrap items-center justify-between gap-2">
                 <p className="text-[13px] text-ink-3">
                   {markers.length === 0
@@ -427,7 +429,7 @@ export function MarkPanel({ examination }: { examination: Examination }) {
               </div>
             </div>
             {markers.length ? (
-              <aside aria-label="Marker checklist" className="min-w-0">
+              <aside aria-label="Marker checklist" data-tour="checklist" className="min-w-0">
                 <h3 className="text-[13px] font-semibold text-ink">Checklist</h3>
                 <p className="mt-0.5 mb-2 text-[12.5px] text-ink-3 tabular">{missing === 0 ? "Every marker is on every signature." : `${missing} still to place`}</p>
                 <MarkerChecklist examination={examination} activeImageId={active.id} activeNumber={activeNumber} onOpen={openPair} />

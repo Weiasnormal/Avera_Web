@@ -128,7 +128,11 @@ export const useExaminationsStore = create<ExaminationsStore>((set, get) => {
       await get().flush();
       set({ listStatus: get().items.length ? "ready" : "loading" });
       try {
-        set({ items: await examinationRepository.list(requireUserId()), listStatus: "ready" });
+        const all = await examinationRepository.list(requireUserId());
+        // Coming back to the list ends any practice run.
+        const practice = all.filter((item) => item.isPractice);
+        await Promise.all(practice.map((item) => get().remove(item.id)));
+        set({ items: all.filter((item) => !item.isPractice), listStatus: "ready" });
       } catch {
         set({ listStatus: "error" });
       }

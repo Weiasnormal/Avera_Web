@@ -32,6 +32,12 @@ export function hasAiBasisChanged(examination: Pick<Examination, "caseId" | "aiB
   });
 }
 
+/** Standards added since the analysis, which the model never compared. */
+export function standardsOutsideAiBasis(examination: Pick<Examination, "aiBasis" | "images">) {
+  const analyzed = examination.aiBasis?.references.map((reference) => reference.imageId) ?? [];
+  return examination.images.filter((image) => image.role === "standard" && !analyzed.includes(image.id));
+}
+
 /** The AI result to show or print, or null when it no longer describes these signatures. */
 export function currentAiResult(examination: Pick<Examination, "caseId" | "aiBasis" | "images" | "aiResult">) {
   return examination.aiResult && !hasAiBasisChanged(examination) ? examination.aiResult : null;

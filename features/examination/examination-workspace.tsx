@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CircleAlert, Check, HardDrive, RotateCw } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleAlert, CircleHelp, Check, HardDrive, RotateCw } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -16,6 +16,7 @@ import { useExaminationsStore } from "@/stores/examinations";
 import { EXAMINATION_STEP_IDS, type Examination, type ExaminationStepId } from "@/types/examination";
 
 import { ExaminationStepper } from "./examination-stepper";
+import { SpotlightTour, useStepTips } from "./tutorial";
 import { ExportPanel, ReportActions } from "./export-step";
 import { GeneralFindingsPanel, SpecificFindingsPanel } from "./findings-steps";
 import { ImagesPanel } from "./images-step";
@@ -99,7 +100,9 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
     return (
       <div className="flex flex-col gap-5">
         <CaseDetails examination={examination} />
-        <ImagesPanel examination={examination} />
+        <div data-tour="images">
+          <ImagesPanel examination={examination} />
+        </div>
       </div>
     );
   }
@@ -112,7 +115,9 @@ function ActiveStep({ step, examination }: { step: ExaminationStepId; examinatio
     return (
       <div className="flex flex-col gap-5">
         <ConclusionPanel examination={examination} />
-        <ExportPanel examination={examination} />
+        <div data-tour="report">
+          <ExportPanel examination={examination} />
+        </div>
       </div>
     );
   }
@@ -145,6 +150,7 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
   const current = useExaminationsStore((state) => state.current);
   const status = useExaminationsStore((state) => state.currentStatus);
   const saveStatus = useExaminationsStore((state) => state.saveStatus);
+  const hasExaminationForTips = current?.id === examinationId;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const previousStep = useRef<ExaminationStepId | null>(null);
 
@@ -154,6 +160,7 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
   const wanted: ExaminationStepId = isStepId(requested) ? requested : (examination?.lastStep ?? "images");
   // A saved position or shared link can't skip the required signatures.
   const step: ExaminationStepId = locked ? "images" : wanted;
+  const stepTips = useStepTips(step, hasExaminationForTips);
   const stepIndex = EXAMINATION_STEP_IDS.indexOf(step);
   const stepInfo = EXAMINATION_STEPS[stepIndex];
   const hrefFor = (target: ExaminationStepId) => `${pathname}?step=${target}`;
@@ -242,11 +249,31 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
         <div className="mb-3">{backLink}</div>
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
           <h1 className="min-w-0 truncate text-[24px] leading-tight font-bold tracking-[-0.015em] text-ink">{examinationTitle(examination)}</h1>
-          <div className="hidden md:block" aria-live="polite">
-            <SaveIndicator />
+          <div className="hidden items-center gap-2 md:flex">
+            <span aria-live="polite">
+              <SaveIndicator />
+            </span>
+            <Button variant="ghost" size="sm" icon={<CircleHelp className="size-4" aria-hidden />} onClick={stepTips.show}>
+              Show tips
+            </Button>
           </div>
         </div>
       </div>
+
+      {examination.isPractice ? (
+        <Alert
+          tone="info"
+          className="mb-5"
+          title="Practice examination"
+          action={
+            <ButtonLink variant="secondary" size="sm" href={routes.examiner.examinations}>
+              End practice
+            </ButtonLink>
+          }
+        >
+          These signatures are made up. This examination is removed when you return to your list.
+        </Alert>
+      ) : null}
 
       <PhoneSummary examination={examination} />
 
@@ -265,7 +292,9 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
           </Alert>
         ) : null}
 
-        <ExaminationStepper examination={examination} active={step} locked={locked} hrefFor={hrefFor} />
+        <div data-tour="steps">
+          <ExaminationStepper examination={examination} active={step} locked={locked} hrefFor={hrefFor} />
+        </div>
 
         <div key={step} className="mt-7 animate-fade-in">
           <div className="mb-5">
@@ -274,7 +303,9 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
             </h2>
             <p className="mt-1 text-[14px] text-ink-3">{stepInfo.description}</p>
           </div>
-          <ActiveStep step={step} examination={examination} />
+          <div data-tour="panel">
+            <ActiveStep step={step} examination={examination} />
+          </div>
         </div>
 
         <div className="mt-6 flex items-center justify-between gap-3">
@@ -303,6 +334,8 @@ export function ExaminationWorkspace({ examinationId }: { examinationId: string 
           ) : null}
         </div>
       </div>
+
+      {stepTips.open ? <SpotlightTour key={step} tips={stepTips.tips} onClose={stepTips.close} /> : null}
     </>
   );
 }

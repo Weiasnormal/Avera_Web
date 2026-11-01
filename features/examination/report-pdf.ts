@@ -425,14 +425,23 @@ export async function buildExaminationReport(examination: Examination, userId: s
 
     const aiResult = examination.includeAiResult ? currentAiResult(examination) : null;
     if (aiResult) {
-      writer.y -= 10;
-      writer.paragraph("Avera AI comparison (supporting information):", bold, 10);
-      const confidence = aiResult.confidence === null ? "" : `, confidence score ${aiResult.confidence.toFixed(1)}%`;
-      writer.paragraph(
-        `Model result: ${aiResult.verdict}${confidence}, distance ${aiResult.distance.toFixed(4)}, threshold ${aiResult.threshold.toFixed(4)}. The score isn't a statistical probability. The model supports and doesn't replace the examiner's opinion.`,
-        regular,
-        9.5,
-      );
+      writer.y -= 14;
+      const column = writer.width / 4;
+      writer.table({
+        banner: ["AVERA AI COMPARISON (SUPPORTING INFORMATION)"],
+        widths: [column, column, column, column],
+        header: ["Model result", "Confidence score", "Distance", "Threshold"],
+        rows: [
+          [
+            aiResult.verdict,
+            aiResult.confidence === null ? "-" : `${aiResult.confidence.toFixed(1)}%`,
+            aiResult.distance.toFixed(4),
+            aiResult.threshold.toFixed(4),
+          ],
+        ],
+      });
+      writer.y -= 6;
+      writer.paragraph("The score isn't a statistical probability. The model supports and doesn't replace the examiner's opinion.", regular, 9.5);
     }
     drawSignOff();
 
@@ -463,6 +472,10 @@ export async function buildExaminationReport(examination: Examination, userId: s
     pages.forEach((page, index) => {
       const footer = `Prepared with Avera${examination.caseNumber.trim() ? `  |  Case ${writer.clean(regular, examination.caseNumber.trim())}` : ""}`;
       page.drawText(footer, { x: MARGIN, y: 28, font: regular, size: 8, color: MUTED });
+      if (examination.isPractice) {
+        const notice = "PRACTICE ONLY - NOT A REAL EXAMINATION";
+        page.drawText(notice, { x: (page.getWidth() - bold.widthOfTextAtSize(notice, 11)) / 2, y: page.getHeight() - 32, font: bold, size: 11, color: MARKER.pdf });
+      }
       const number = `Page ${index + 1} of ${pages.length}`;
       page.drawText(number, { x: page.getWidth() - MARGIN - regular.widthOfTextAtSize(number, 8), y: 28, font: regular, size: 8, color: MUTED });
     });
