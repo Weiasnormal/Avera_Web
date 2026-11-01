@@ -36,7 +36,10 @@ export interface MarkerPlacement {
 export interface ExaminationMarker {
   number: number;
   placements: Record<string, MarkerPlacement>;
+  /** Hand-adjusted chart crops. Other cells are generated around the marker's point. */
   chartFrames: Record<string, NormalizedRect>;
+  /** How much of the signature this row's generated crops show; 1 by default. */
+  chartScale?: number;
 }
 
 export interface FindingsColumn {

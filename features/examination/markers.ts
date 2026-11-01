@@ -50,6 +50,51 @@ export function placementAt(image: ExaminationImage, viewPoint: NormalizedPoint)
   return { target: fromView(image, viewPoint), tail: fromView(image, { x, y }) };
 }
 
+const CHART_VIEW_SHARE = 0.3;
+export const CHART_SCALE_STEP = 1.25;
+export const CHART_SCALE_MIN = 0.5;
+export const CHART_SCALE_MAX = 2.5;
+
+/** A square close-up centered on the marker's point, kept inside the crop where it can be. */
+export function automaticChartFrame(image: ExaminationImage, placement: MarkerPlacement, scale = 1): NormalizedRect {
+  const view = viewRect(image);
+  const viewWidth = view.width * image.width;
+  const viewHeight = view.height * image.height;
+  const side = Math.min(viewWidth * CHART_VIEW_SHARE * scale, viewWidth, viewHeight);
+  const width = side / image.width;
+  const height = side / image.height;
+  return {
+    x: clamp(placement.target.x - width / 2, view.x, view.x + view.width - width),
+    y: clamp(placement.target.y - height / 2, view.y, view.y + view.height - height),
+    width,
+    height,
+  };
+}
+
+export function chartFrameFor(image: ExaminationImage, marker: ExaminationMarker): NormalizedRect | null {
+  const placement = marker.placements[image.id];
+  if (!placement) return null;
+  return marker.chartFrames[image.id] ?? automaticChartFrame(image, placement, marker.chartScale);
+}
+
+export function withChartFrame(markers: ExaminationMarker[], number: number, imageId: string, frame: NormalizedRect | null) {
+  return markers.map((marker) => {
+    if (marker.number !== number) return marker;
+    const chartFrames = { ...marker.chartFrames };
+    if (frame) chartFrames[imageId] = frame;
+    else delete chartFrames[imageId];
+    return { ...marker, chartFrames };
+  });
+}
+
+export function withChartScale(markers: ExaminationMarker[], number: number, factor: number) {
+  return markers.map((marker) =>
+    marker.number === number
+      ? { ...marker, chartScale: clamp((marker.chartScale ?? 1) * factor, CHART_SCALE_MIN, CHART_SCALE_MAX) }
+      : marker,
+  );
+}
+
 export function withNewMarker(markers: ExaminationMarker[]) {
   const number = markers.reduce((highest, marker) => Math.max(highest, marker.number), 0) + 1;
   return { number, markers: [...markers, { number, placements: {}, chartFrames: {} }] };

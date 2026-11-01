@@ -129,8 +129,9 @@ export function isStepStarted(examination: Examination, step: ExaminationStepId)
       return examination.images.some((image) => image.crop !== null);
     case "mark":
       return examination.markers.some((marker) => Object.keys(marker.placements).length > 0);
+    // The chart builds itself from placed markers.
     case "chart":
-      return examination.markers.some((marker) => Object.keys(marker.chartFrames).length > 0);
+      return examination.markers.some((marker) => Object.keys(marker.placements).length > 0);
     case "general":
       return hasCellText(examination.generalFindings);
     case "specific":

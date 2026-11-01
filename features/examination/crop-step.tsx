@@ -35,18 +35,21 @@ function isFullFrame(rect: NormalizedRect) {
   return rect.x <= 0 && rect.y <= 0 && rect.width >= 1 && rect.height >= 1;
 }
 
-function CropStage({
+/** A frame drawn on the original image. Also used to adjust comparison chart crops. */
+export function CropStage({
   image,
   url,
+  frame,
   onCommit,
 }: {
   image: ExaminationImage;
   url: string | undefined;
+  frame: NormalizedRect | null;
   onCommit: (rect: NormalizedRect) => void;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ mode: DragMode; startX: number; startY: number; start: NormalizedRect } | null>(null);
-  const [rect, setRect] = useState<NormalizedRect>(image.crop ?? FULL);
+  const [rect, setRect] = useState<NormalizedRect>(frame ?? FULL);
   const isFull = isFullFrame(rect);
 
   const point = (event: PointerEvent) => {
@@ -220,7 +223,7 @@ export function CropPanel({ examination }: { examination: Examination }) {
         }
       >
         {/* The crop value in the key resets the frame when "Use full image" is pressed. */}
-        <CropStage key={active.crop ? "cropped" : "full"} image={active} url={imageUrls[active.id]} onCommit={(rect) => setCrop(active.id, rect)} />
+        <CropStage key={active.crop ? "cropped" : "full"} image={active} url={imageUrls[active.id]} frame={active.crop} onCommit={(rect) => setCrop(active.id, rect)} />
       </ZoomViewport>
       <p className="mt-2.5 text-[13px] text-ink-3">Drag on the image to draw a frame, then drag the frame or its corners to adjust.</p>
     </Panel>
