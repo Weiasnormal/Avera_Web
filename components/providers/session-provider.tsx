@@ -9,11 +9,13 @@ import { clearLocalSession } from "@/services/auth";
 import { useAdminStore } from "@/stores/admin";
 import { useAnalysisStore } from "@/stores/analysis";
 import { useCasesStore } from "@/stores/cases";
+import { useExaminationsStore } from "@/stores/examinations";
 import { useSessionStore } from "@/stores/session";
 import { toast } from "@/stores/toast";
 
 /** Clears every user-scoped store (mobile clearUserScopedState / clearAdminState). */
 export function resetUserState() {
+  useExaminationsStore.getState().reset();
   useCasesStore.getState().reset();
   useAnalysisStore.getState().reset();
   useAdminStore.getState().reset();

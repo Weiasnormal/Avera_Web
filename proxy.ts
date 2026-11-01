@@ -8,7 +8,7 @@ import { homePathFor, onboardingPathFor } from "@/lib/routes";
 
 const SESSION_COOKIE = process.env.AVERA_SESSION_COOKIE?.trim() || "avera_session";
 
-const EXAMINER_PREFIXES = ["/dashboard", "/cases", "/stats", "/analysis", "/profile", "/help"];
+const EXAMINER_PREFIXES = ["/dashboard", "/cases", "/examinations", "/stats", "/analysis", "/profile", "/help"];
 const ONBOARDING_PATHS = ["/join", "/pending", "/organization/new"];
 const GUEST_ONLY_PATHS = ["/sign-in", "/sign-up"];
 

@@ -19,6 +19,8 @@ export const routes = {
     dashboard: "/dashboard",
     cases: "/cases",
     caseResult: (caseId: string) => `/cases/${encodeURIComponent(caseId)}`,
+    examinations: "/examinations",
+    examination: (examinationId: string) => `/examinations/${encodeURIComponent(examinationId)}`,
     stats: "/stats",
     newAnalysis: "/analysis/new",
     processing: (caseId: string) => `/analysis/${encodeURIComponent(caseId)}/processing`,

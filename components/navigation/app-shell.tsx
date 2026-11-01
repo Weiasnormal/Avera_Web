@@ -6,6 +6,7 @@ import {
   FolderOpen,
   LayoutDashboard,
   Menu,
+  Microscope,
   Users,
   X,
   type LucideIcon,
@@ -50,6 +51,7 @@ function useNavItems(role: "user" | "admin"): NavItem[] {
   return [
     { href: routes.examiner.dashboard, label: "Dashboard", icon: LayoutDashboard, exact: true },
     { href: routes.examiner.cases, label: "Cases", icon: FolderOpen },
+    { href: routes.examiner.examinations, label: "Examination", icon: Microscope },
     { href: routes.examiner.stats, label: "Statistics", icon: BarChart3 },
   ];
 }
